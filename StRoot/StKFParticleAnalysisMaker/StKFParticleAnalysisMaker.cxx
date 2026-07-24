@@ -206,13 +206,8 @@ Int_t StKFParticleAnalysisMaker::Init()
   }
 
   CreateEPDist();
-  CreatePzVsEtaDist();
-    
-  CreatePzDist();
-
-  InvMassLambdaKFP = new TH1F("InvMassLambdaKFP", "InvMassLambdaKFP", 500, 1.06, 1.18);
-  InvMassLambdaBarKFP = new TH1F("InvMassLambdaBarKFP", "LambdaBarKFP", 500, 1.06, 1.18);
-  MomKFP = new TH1F("MomKFP", "MomKFP", 100, 0, 5);
+  CreateKFPHists();
+  GetWeightCorr();
   GetCentring();
   GetFlattening();
 
@@ -594,9 +589,6 @@ Int_t StKFParticleAnalysisMaker::Make()
   // Here is my Polarization analysis
   double dphi = 0., Phi_ang = 0., phi_Lam = 0.;
   double w = 0., dphi_EPD = 0.;
-  double QWeight[nSub] = {};
-  double Qvec[2*nSub] = {};
-  double Psi2[nSub] = {};
   double deltaPsi2[nSub] = {};  
   int PP, TT, EW, iPsi = 0, iSide = 0;
   
@@ -606,8 +598,7 @@ Int_t StKFParticleAnalysisMaker::Make()
   mEventsDone++;
   //cout << "Done event " << mEventsDone << endl;
   
-  if (EventCut(myEvent) == false) return kStOk;
-   
+  if (EventCut(myEvent) == false) return kStOk;   
    
   
   //mTrgEff = 1;
@@ -621,9 +612,13 @@ Int_t StKFParticleAnalysisMaker::Make()
   if (cent < 0 || isBadRun  || isPileUpEvt) return kStOk;
 
   for(int iSub=0; iSub!=nSub; iSub++){
-    Qvec[2*iSub] = 0.;
-    Qvec[2*iSub+1] = 0.;
-    QWeight[iSub] = 0.;
+    Qvec1[2*iSub] = 0.;
+    Qvec1[2*iSub+1] = 0.;
+    Qvec2[2*iSub] = 0.;
+    Qvec2[2*iSub+1] = 0.;
+    QWeight1[iSub] = 0.;
+    QWeight2[iSub] = 0.;
+    Psi1[iSub] = 0.;
     Psi2[iSub] = 0.;
   }
 
@@ -644,14 +639,9 @@ Int_t StKFParticleAnalysisMaker::Make()
     if(eta>0) iSide = 0;//West
     else if(eta<0) iSide = 1;//East
 
-    Qvec[2*iSide] += wEff*TMath::Cos(2*Phi_ang);
-    Qvec[2*iSide+1] += wEff*TMath::Sin(2*Phi_ang);
-    QWeight[iSide] += wEff;
-
-    Qvec[4] += wEff*TMath::Cos(2*Phi_ang);
-    Qvec[5] += wEff*TMath::Sin(2*Phi_ang);
-    QWeight[2] += wEff;
-    QWeight[3] += wEff;   
+    Qvec2[2*iSide] += wEff*TMath::Cos(2*Phi_ang);
+    Qvec2[2*iSide+1] += wEff*TMath::Sin(2*Phi_ang);
+    QWeight2[iSide] += wEff;   
 
   }//for (int i = 0; i < nPicoTracks; ++i)
 
@@ -676,85 +666,105 @@ Int_t StKFParticleAnalysisMaker::Make()
 
     if(EW == 1){
 
-      Qvec[8] += wEff_EPD*TMath::Cos(2*phiCenter[PP-1][TT-1][EW]);
-      Qvec[9] += wEff_EPD*TMath::Sin(2*phiCenter[PP-1][TT-1][EW]);
-      QWeight[4] += wEff_EPD;
+      wEff_EPD *= fabs(v1_average[cent][0]->GetBinContent(row));
+      Qvec_1[0] += wEff_EPD*TMath::Cos(phiCenter[PP-1][TT-1][EW]);
+      Qvec_1[1] += wEff_EPD*TMath::Sin(phiCenter[PP-1][TT-1][EW]);
+      QWeight_1[0] += wEff_EPD;
       
     }
 
     if(EW==-1){
-      EW = 0;
-      Qvec[10] += wEff_EPD*TMath::Cos(2*phiCenter[PP-1][TT-1][0]);
-      Qvec[11] += wEff_EPD*TMath::Sin(2*phiCenter[PP-1][TT-1][0]);
-      QWeight[5] += wEff_EPD;
+      wEff_EPD *= fabs(v1_average[cent][1]->GetBinContent(row));
+      Qvec_1[2] += wEff_EPD*TMath::Cos(phiCenter[PP-1][TT-1][0]);
+      Qvec_1[3] += wEff_EPD*TMath::Sin(phiCenter[PP-1][TT-1][0]);
+      QWeight_1[1] += wEff_EPD;
       
     }
-    QWeight[6] = 1;
   }
  
    
 
   //.........................................start of RP calculation.....................................
-  int check = 0;
-  for(int iSub=0; iSub!=nSub; iSub++){
-    if(QWeight[iSub] == 0) check = 1;
+  bool check = true;
+  for(int iSub=0; iSub!=nSub-1; iSub++){
+    if(QWeight1[iSub] == 0) check = false;
+    if(QWeight2[iSub] == 0) check = false;
   }
-  if(check == 1) return kStOk;
+  if(!check) return kStOk;
 
   //Get Q vectors
   
-  for(int iSub=0; iSub!=nSub; iSub++){
-    Qvec[2*iSub] = Qvec[2*iSub]/QWeight[iSub];
-    Qvec[2*iSub+1] = Qvec[2*iSub+1]/QWeight[iSub];
-    if(fabs(Qvec[2*iSub])>999 || fabs(Qvec[2*iSub+1])>999) check = 1;
+  for(int iSub=0; iSub!=nSub-1; iSub++){
+    Qvec1[2*iSub] = Qvec1[2*iSub]/QWeight1[iSub];
+    Qvec1[2*iSub+1] = Qvec1[2*iSub+1]/QWeight1[iSub];
+    if(fabs(Qvec1[2*iSub])>999 || fabs(Qvec1[2*iSub+1])>999) check = false;
+
+    Qvec2[2*iSub] = Qvec2[2*iSub]/QWeight2[iSub];
+    Qvec2[2*iSub+1] = Qvec2[2*iSub+1]/QWeight2[iSub];
+    if(fabs(Qvec2[2*iSub])>999 || fabs(Qvec2[2*iSub+1])>999) check = false;
   }
-  if(check == 1) return kStOk;
-  Qvec[6] = Qvec[0] + Qvec[2];
-  Qvec[7] = Qvec[1] + Qvec[3];
-  Qvec[12] = Qvec[8] + Qvec[10];
-  Qvec[13] = Qvec[9] + Qvec[11];
+  if(!check) return kStOk;
+  Qvec_1[4] = Qvec_1[0] - Qvec_1[2];
+  Qvec_1[5] = Qvec_1[1] - Qvec_1[3];
+  Qvec_2[4] = Qvec_2[0] + Qvec_2[2];
+  Qvec_2[5] = Qvec_2[1] + Qvec_2[3];
 
   
   //Recentering
   for(int iSub = 0; iSub!=2*nSub; iSub++){
-    Qvec[iSub] -= QvecProf_TH[iSub]->GetBinContent(cent+1);
+    Qvec1[iSub] -= Qvec1Prof_TH[iSub]->GetBinContent(cent+1);
+    Qvec2[iSub] -= Qvec2Prof_TH[iSub]->GetBinContent(cent+1);
   } 
 
 
   for(int iSub=0; iSub!=nSub; iSub++){
-    Psi2[iSub] = GetPsi(Qvec[2*iSub], Qvec[2*iSub+1]);
-    if(Psi2[iSub] > 3.5) check = 1;
-  }
-  if(check == 1) return kStOk;
+    Psi1[iSub] = GetPsi(1, Qvec1[2*iSub], Qvec1[2*iSub+1]);
+    if(Psi1[iSub] > 7) check = false;
 
+    Psi2[iSub] = GetPsi(2, Qvec2[2*iSub], Qvec2[2*iSub+1]);
+    if(Psi2[iSub] > 3.5) check = false;
+  }
+  if(!check) return kStOk;
 
   
   //Flattaning
   for(int iProf=0; iProf!=10; iProf++){
     for(int iSub=0; iSub!=nSub; iSub++){
-      deltaPsi2[iSub] += Coef_A_n_TH[iProf][iSub]->GetBinContent(cent+1)*TMath::Cos((iProf+1)*2*Psi2[iSub]) + \
-                         Coef_B_n_TH[iProf][iSub]->GetBinContent(cent+1)*TMath::Sin((iProf+1)*2*Psi2[iSub]);
+      deltaPsi1[iSub] += Coef_A_n_TH_Psi1[iProf][iSub]->GetBinContent(cent+1)*TMath::Cos((iProf+1)*Psi1[iSub]) + \
+                         Coef_B_n_TH_Psi1[iProf][iSub]->GetBinContent(cent+1)*TMath::Sin((iProf+1)*Psi1[iSub]);
+      
+      deltaPsi2[iSub] += Coef_A_n_TH_Psi2[iProf][iSub]->GetBinContent(cent+1)*TMath::Cos((iProf+1)*2*Psi2[iSub]) + \
+                         Coef_B_n_TH_Psi2[iProf][iSub]->GetBinContent(cent+1)*TMath::Sin((iProf+1)*2*Psi2[iSub]);
     }
   }
 
   for(int iSub=0; iSub!=nSub; iSub++){
-      Psi2[iSub] += deltaPsi2[iSub]/2.;
-      while(Psi2[iSub]>TMath::Pi()) Psi2[iSub] -= TMath::Pi();
-      while(Psi2[iSub]<0.0) Psi2[iSub] += TMath::Pi();
-      deltaPsi2[iSub] = 0.0;
+    Psi1[iSub] += deltaPsi1[iSub];
+    while(Psi1[iSub]>2*TMath::Pi()) Psi1[iSub] -= 2*TMath::Pi();
+    while(Psi1[iSub]<0.0) Psi1[iSub] += 2*TMath::Pi();
+    deltaPsi2[iSub] = 0.0;  
+    
+    Psi2[iSub] += deltaPsi2[iSub]/2.;
+    while(Psi2[iSub]>TMath::Pi()) Psi2[iSub] -= TMath::Pi();
+    while(Psi2[iSub]<0.0) Psi2[iSub] += TMath::Pi();
+    deltaPsi2[iSub] = 0.0;
   }
   
   
   //Fill histograms
   for(int iSub = 0; iSub!=nSub; iSub++){
-    QvecHist[cent][2*iSub]->Fill(Qvec[2*iSub]);
-    QvecHist[cent][2*iSub+1]->Fill(Qvec[2*iSub+1]);
+    Qvec1Hist[cent][2*iSub]->Fill(Qvec1[2*iSub]);
+    Qvec1Hist[cent][2*iSub+1]->Fill(Qvec1[2*iSub+1]);
+    Psi1Hist[cent][iSub]->Fill(Psi1[iSub]);
+
+    Qvec2Hist[cent][2*iSub]->Fill(Qvec2[2*iSub]);
+    Qvec2Hist[cent][2*iSub+1]->Fill(Qvec2[2*iSub+1]);
     Psi2Hist[cent][iSub]->Fill(Psi2[iSub]);
   } 
 
 
-  CosOfDiff->Fill(cent, TMath::Cos(2*(Psi2[0] - Psi2[1])));
-  CosOfDiff_EPD->Fill(cent, TMath::Cos(2*(Psi2[3] - Psi2[4])));
+  CosOfDiff_1->Fill(cent, TMath::Cos(Psi1[0] - Psi1[1]));
+  CosOfDiff_2->Fill(cent, TMath::Cos(2*(Psi2[0] - Psi2[1])));
 
   //.........................................end of RP calculation.....................................
 
@@ -763,17 +773,11 @@ Int_t StKFParticleAnalysisMaker::Make()
   for (int iParticle=0; iParticle<fStKFParticlePerformanceInterface->GetNReconstructedParticles(); iParticle++){
     KFParticle particle = fStKFParticleInterface->GetParticles()[iParticle];
     TVector3 ParentVec(particle.GetPx(), particle.GetPy(), particle.GetPz()); 
-    MomKFP->Fill(ParentVec.Mag());
 	
 
-    if(fabs(ParentVec.Eta())>1.5) continue;
-    if(ParentVec.Perp()<0.15 || ParentVec.Perp()>5.) continue;
 
     //Lambda research
     if(particle.GetPDG() == 3122){
-
-      InvMassLambdaKFP->Fill(particle.GetMass());
-      InvMLamCent[cent]->Fill(particle.GetMass());
 
       if(ParentVec.Eta()<0) iPsi = 0;
       else iPsi = 1;
@@ -793,73 +797,35 @@ Int_t StKFParticleAnalysisMaker::Make()
         proton_mom.Boost(-(Lam_mom));
 
         //Pz studing
-        phi_Lam = ParentVec.Phi();        
-        dphi = phi_Lam-Psi2[3];
-        while((dphi) < 0.) dphi+=TMath::Pi();//caus of dphi = (-2pi;pi)
-        
-
-        dphi_EPD = phi_Lam-Psi2[6];
-        while((dphi_EPD) < 0.) dphi_EPD+=TMath::Pi();
-        
-        //InvMass
-        Cos_TetaSin_PhiVsInvMass[cent][0]->Fill(particle.GetMass(), proton_mom.CosTheta()*TMath::Sin(2*dphi));        
-        Cos_TetaSin_PhiVsInvMass_EPD[cent]->Fill(particle.GetMass(), proton_mom.CosTheta()*TMath::Sin(2*dphi_EPD));
-
-        dphi = phi_Lam-Psi2[iPsi];
-        while((dphi) < 0.) dphi+=TMath::Pi();
-
-        Cos_TetaSin_PhiVsInvMass[cent][1]->Fill(particle.GetMass(), proton_mom.CosTheta()*TMath::Sin(2*dphi));
-
         if(particle.GetMass() <= 1.111 || particle.GetMass() >= 1.121) continue;
-        
-        Cos2_TetaVsPhi->Fill(cent, pow(proton_mom.CosTheta(), 2));
-          
-        
-        //Get pT bin number
-        for(int iPt=0; iPt!=5; iPt++){
-		      if(ParentVec.Perp() >= pt_intervals[iPt] && ParentVec.Perp() < pt_intervals[iPt+1]){
-            pT_bin = iPt;                       
-            break;
-		      }
-	      }
 
-        //get eta bin number
-        for(int iEta = 0; iEta!=9; iEta++){
-          if(ParentVec.Eta() >= eta_intervals[iEta] && ParentVec.Eta() < eta_intervals[iEta+1]){
-            eta_bin = iEta;                        
-            break;
-          }
-        }
-
-        //Cos2(theta-phi) for pt and eta bins
-        Cos2_TetaVsPhi_Pt[pT_bin]->Fill(cent, pow(proton_mom.CosTheta(), 2));
-        Cos2_TetaVsPhi_Eta[eta_bin]->Fill(cent, pow(proton_mom.CosTheta(), 2));
-
-        //Here I saw Pz for differnt Psi
+        sin_diffPsi1Phi = TMath::Sin(proton_mom.Phi() - Psi1[2]);
+        cos_diffPsi1Phi = TMath::Cos(proton_mom.Phi() - Psi1[2]);
         
-        dphi = phi_Lam-Psi2[3];
-        while((dphi) < 0.) dphi+=TMath::Pi();
+        //
+        phi_Lam = ParentVec.Phi();
+        dphi = phi_Lam-Psi2[2];
+        while((dphi) < 0.) dphi+=TMath::Pi();//caus of dphi = (-2pi;pi)
 
-        Cos_Teta_AverVsPhi[cent][0]->Fill(dphi, proton_mom.CosTheta());
-        Cos_TetaVsPhi_Pt[cent][pT_bin][0]->Fill(dphi, proton_mom.CosTheta());
-        Cos_TetaVsPhi_Eta[cent][eta_bin][0]->Fill(dphi, proton_mom.CosTheta());
-        
+        prSin_diffPhiPsi1[cent][1]->Fill(dphi, sin_diffPsi1Phi);
+        prCos_diffPhiPsi1[cent][1]->Fill(dphi, cos_diffPsi1Phi);
+        prCos_theta[cent][1]->Fill(dphi, proton_mom.CosTheta());
+        prSin_theta[cent][1]->Fill(dphi, TMath::Sin(proton_mom.Theta()));
 
         dphi = phi_Lam-Psi2[iPsi];
-        while((dphi) < 0.) dphi+=TMath::Pi();
-
-        Cos_Teta_AverVsPhi[cent][1]->Fill(dphi, proton_mom.CosTheta());
-        Cos_TetaVsPhi_Pt[cent][pT_bin][1]->Fill(dphi, proton_mom.CosTheta());
-        Cos_TetaVsPhi_Eta[cent][eta_bin][1]->Fill(dphi, proton_mom.CosTheta());
+        while((dphi) < 0.) dphi+=TMath::Pi();        
+                 
+        prSin_diffPhiPsi1[cent][0]->Fill(dphi, sin_diffPsi1Phi);
+        prCos_diffPhiPsi1[cent][0]->Fill(dphi, cos_diffPsi1Phi);
+        prCos_theta[cent][0]->Fill(dphi, proton_mom.CosTheta());
+        prSin_theta[cent][0]->Fill(dphi, TMath::Sin(proton_mom.Theta()));
+        
 
       }//for (const auto& elem : particle.DaughterIds())
     }//if(particle.GetPDG() == 3122)
 
     //AntiLambda research
     if(particle.GetPDG() == -3122){
-
-      InvMassLambdaBarKFP->Fill(particle.GetMass());
-      InvMLamBarCent[cent]->Fill(particle.GetMass());
 
       if(ParentVec.Eta()<0) iPsi = 0;
       else iPsi = 1;
@@ -874,75 +840,40 @@ Int_t StKFParticleAnalysisMaker::Make()
         TVector3 DaugVec(DaugParticle.GetPx(), DaugParticle.GetPy(), DaugParticle.GetPz());
 
         if(abs(DaugParticle.GetPDG())!=2212) continue;
-        //MomTransKFP->Fill(femtoKFP->pt());
         
-
         
         TVector3 Lam_mom = ParentVec * (1/particle.GetE());
         
         TLorentzVector proton_mom(DaugVec, DaugParticle.GetE());
         proton_mom.Boost(-(Lam_mom));
+
+        if(particle.GetMass() <= 1.111 || particle.GetMass() >= 1.121) continue;
+
+        sin_diffPsi1Phi = TMath::Sin(proton_mom.Phi() - Psi1[2]);
+        cos_diffPsi1Phi = TMath::Cos(proton_mom.Phi() - Psi1[2]);
 	
         //Pz studing
         phi_Lam = ParentVec.Phi();
         
-        dphi = phi_Lam-Psi2[3];
+        dphi = phi_Lam-Psi2[2];
         while((dphi) < 0.) dphi+=TMath::Pi();//caus of dphi = (-2pi;pi)
-        
-        dphi_EPD = phi_Lam-Psi2[6];
-        while((dphi_EPD) < 0.) dphi_EPD+=TMath::Pi();
 
-        //Cos(ThetaStar)
-        Cos_TetaSin_PhiBarVsInvMass[cent][0]->Fill(particle.GetMass(), proton_mom.CosTheta()*TMath::Sin(2*dphi));
-        Cos_TetaSin_PhiBarVsInvMass_EPD[cent]->Fill(particle.GetMass(), proton_mom.CosTheta()*TMath::Sin(2*dphi_EPD));
+
+        prSin_diffPhiPsi1_LamBar[cent][1]->Fill(dphi, sin_diffPsi1Phi);
+        prCos_diffPhiPsi1_LamBar[cent][1]->Fill(dphi, cos_diffPsi1Phi);
+        prCos_theta_LamBar[cent][1]->Fill(dphi, proton_mom.CosTheta());
+        prSin_theta_LamBar[cent][1]->Fill(dphi, TMath::Sin(proton_mom.Theta()));
+        
 
         dphi = phi_Lam-Psi2[iPsi];
         while((dphi) < 0.) dphi+=TMath::Pi();
-        Cos_TetaSin_PhiBarVsInvMass[cent][1]->Fill(particle.GetMass(), proton_mom.CosTheta()*TMath::Sin(2*dphi));
 
 
-        if(particle.GetMass() <= 1.111 || particle.GetMass() >= 1.121) continue;
-        
-        Cos2_TetaBarVsPhi->Fill(cent, pow(proton_mom.CosTheta(), 2));
-          
+        prSin_diffPhiPsi1_LamBar[cent][0]->Fill(dphi, sin_diffPsi1Phi);
+        prCos_diffPhiPsi1_LamBar[cent][0]->Fill(dphi, cos_diffPsi1Phi);
+        prCos_theta_LamBar[cent][0]->Fill(dphi, proton_mom.CosTheta());
+        prSin_theta_LamBar[cent][0]->Fill(dphi, TMath::Sin(proton_mom.Theta()));
 
-        //Cos(ThetaStar) Vs pt
-        for(int iPt = 0; iPt!=5; iPt++){
-		      if(ParentVec.Perp() >= pt_intervals[iPt] && ParentVec.Perp() < pt_intervals[iPt+1]){
-            pT_bin = iPt;                       
-            break;
-          }
-	      } 
-       
-	      //Cos(ThetaStar) and Cos2(ThetaStar) Vs Eta
-	      for(int iEta = 0; iEta!=9; iEta++){
-          if(ParentVec.Eta() >= eta_intervals[iEta] && ParentVec.Eta() < eta_intervals[iEta+1]){
-            eta_bin = iEta;                        
-            break;
-          }
-        }
-
-        Cos2_TetaBarVsPhi_Pt[pT_bin]->Fill(cent, pow(proton_mom.CosTheta(), 2));
-        Cos2_TetaBarVsPhi_Eta[eta_bin]->Fill(cent, pow(proton_mom.CosTheta(), 2));
-
-        //Here I saw Pz for differnt Psi
-        
-        phi_Lam = ParentVec.Phi();        
-        dphi = phi_Lam-Psi2[3];
-        while((dphi) < 0.) dphi+=TMath::Pi();
-
-        Cos_Teta_AverVsPhi_Bar[cent][0]->Fill(dphi, proton_mom.CosTheta());
-        Cos_TetaBarVsPhi_Pt[cent][pT_bin][0]->Fill(dphi, proton_mom.CosTheta());
-        Cos_TetaBarVsPhi_Eta[cent][eta_bin][0]->Fill(dphi, proton_mom.CosTheta());
-        
-
-        phi_Lam = ParentVec.Phi();        
-        dphi = phi_Lam-Psi2[iPsi];
-        while((dphi) < 0.) dphi+=TMath::Pi();
-
-        Cos_Teta_AverVsPhi_Bar[cent][1]->Fill(dphi, proton_mom.CosTheta());
-        Cos_TetaBarVsPhi_Pt[cent][pT_bin][1]->Fill(dphi, proton_mom.CosTheta());
-        Cos_TetaBarVsPhi_Eta[cent][eta_bin][1]->Fill(dphi, proton_mom.CosTheta());
 
       }//for (const auto& elem : particle.DaughterIds())
     }//end of AntiLambda research
@@ -1167,8 +1098,10 @@ bool StKFParticleAnalysisMaker::GoodRun(StPicoEvent* event) { //19.6 Preliminary
 
 bool StKFParticleAnalysisMaker::EventCut(StPicoEvent *event)
 {
-        bool cut = true;
-  if (!event->isTrigger(810010) && !event->isTrigger(810020) && !event->isTrigger(810030) && !event->isTrigger(810040)) cut = false;
+  bool cut = true;
+  if (!event->isTrigger(650000) && !event->isTrigger(650001) && !event->isTrigger(650002) && !event->isTrigger(650003) &&
+      !event->isTrigger(650007) && !event->isTrigger(650004) && !event->isTrigger(650005) && !event->isTrigger(650006) &&
+      !event->isTrigger(650009) ) cut = false;
   if (event->primaryVertex().Z() < -145. || event->primaryVertex().Z() > 145. || ( pow(event->primaryVertex().X(),2) + pow(event->primaryVertex().Y(),2) > 4)) cut = false;
 //  if (!GoodRun(event))  cut = false;
   return cut;
@@ -1248,135 +1181,87 @@ bool StKFParticleAnalysisMaker::IsKfGoof(KFParticle particle) {
 void StKFParticleAnalysisMaker::CreateEPDist() {
 	for(int iHist=0; iHist!=9; iHist++){
     for(int iSub=0; iSub!=nSub; iSub++){
-      QvecHist[iHist][2*iSub] = new TH1F(Form("QvecHist_%i_%i", iHist, 2*iSub), "", 500, -1, 1);
-      QvecHist[iHist][2*iSub+1] = new TH1F(Form("QvecHist_%i_%i", iHist, 2*iSub+1), "", 500, -1, 1);
+      Qvec1Hist[iHist][2*iSub] = new TH1F(Form("Qvec1Hist_%i_%i", iHist, 2*iSub), "", 500, -1, 1);
+      Qvec1Hist[iHist][2*iSub+1] = new TH1F(Form("Qvec1Hist_%i_%i", iHist, 2*iSub+1), "", 500, -1, 1);
+      Qvec2Hist[iHist][2*iSub] = new TH1F(Form("Qvec2Hist_%i_%i", iHist, 2*iSub), "", 500, -1, 1);
+      Qvec2Hist[iHist][2*iSub+1] = new TH1F(Form("Qvec2Hist_%i_%i", iHist, 2*iSub+1), "", 500, -1, 1);
+      
+      Psi1Hist[iHist][iSub] = new TH1F(Form("Psi1Hist_%i_%i", iHist, iSub), "", 140, 0, 7);
       Psi2Hist[iHist][iSub] = new TH1F(Form("Psi2Hist_%i_%i", iHist, iSub), "", 70, 0, 3.5);
     }
   }
 
 
-  CosOfDiff = new TProfile("CosOfDiff", "CosOfDiff", 9, 0, 9);
-  CosOfDiff_EPD = new TProfile("CosOfDiff_EPD", "CosOfDiff_EPD", 9, 0, 9);
+  CosOfDiff_1 = new TProfile("CosOfDiff_1", "CosOfDiff for Psi_1", 9, 0, 9);
+  CosOfDiff_2 = new TProfile("CosOfDiff_2", "CosOfDiff for Psi_2", 9, 0, 9);
 
   for(int iCent=0; iCent!=9; iCent++){
-    QvecHist[iCent][0]->SetTitle(Form("Qx West TPC (%i)", iCent));
-    QvecHist[iCent][1]->SetTitle(Form("Qy West TPC (%i)", iCent));
-    QvecHist[iCent][2]->SetTitle(Form("Qx East TPC (%i)", iCent));
-    QvecHist[iCent][3]->SetTitle(Form("Qy East TPC (%i)", iCent));
-    QvecHist[iCent][4]->SetTitle(Form("Qx Comb TPC (%i)", iCent));
-    QvecHist[iCent][5]->SetTitle(Form("Qy Comb TPC (%i)", iCent));
-    QvecHist[iCent][6]->SetTitle(Form("Qx E+W TPC (%i)", iCent));
-    QvecHist[iCent][7]->SetTitle(Form("Qy E+W TPC (%i)", iCent));
-    QvecHist[iCent][8]->SetTitle(Form("Qx West EPD (%i)", iCent));
-    QvecHist[iCent][9]->SetTitle(Form("Qy West EPD (%i)", iCent));
-    QvecHist[iCent][10]->SetTitle(Form("Qx East EPD (%i)", iCent));
-    QvecHist[iCent][11]->SetTitle(Form("Qy East EPD (%i)", iCent));
-    QvecHist[iCent][12]->SetTitle(Form("Qx E+W EPD (%i)", iCent));
-    QvecHist[iCent][13]->SetTitle(Form("Qy E+W EPD (%i)", iCent));
+    Qvec1Hist[iCent][0]->SetTitle(Form("Qx West EPD first harm (%i)", iCent));
+    Qvec1Hist[iCent][1]->SetTitle(Form("Qy West EPD first harm (%i)", iCent));
+    Qvec1Hist[iCent][2]->SetTitle(Form("Qx East EPD first harm (%i)", iCent));
+    Qvec1Hist[iCent][3]->SetTitle(Form("Qy East EPD first harm (%i)", iCent));
+    Qvec1Hist[iCent][4]->SetTitle(Form("Qx Comb EPD first harm (%i)", iCent));
+    Qvec1Hist[iCent][5]->SetTitle(Form("Qy Comb EPD first harm (%i)", iCent));
 
-    Psi2Hist[iCent][0]->SetTitle(Form("West TPC (%i)", iCent));
-    Psi2Hist[iCent][1]->SetTitle(Form("East TPC (%i)", iCent));
-    Psi2Hist[iCent][2]->SetTitle(Form("Comb TPC (%i)", iCent));
-    Psi2Hist[iCent][3]->SetTitle(Form("E+W TPC (%i)", iCent));
-    Psi2Hist[iCent][4]->SetTitle(Form("West EPD (%i)", iCent));
-    Psi2Hist[iCent][5]->SetTitle(Form("East EPD (%i)", iCent));
-    Psi2Hist[iCent][6]->SetTitle(Form("E+W EPD (%i)", iCent));
+    Qvec2Hist[iCent][0]->SetTitle(Form("Qx West TPC second harm (%i)", iCent));
+    Qvec2Hist[iCent][1]->SetTitle(Form("Qy West TPC second harm (%i)", iCent));
+    Qvec2Hist[iCent][2]->SetTitle(Form("Qx East TPC second harm (%i)", iCent));
+    Qvec2Hist[iCent][3]->SetTitle(Form("Qy East TPC second harm (%i)", iCent));
+    Qvec2Hist[iCent][4]->SetTitle(Form("Qx Comb TPC second harm (%i)", iCent));
+    Qvec2Hist[iCent][5]->SetTitle(Form("Qy Comb TPC second harm (%i)", iCent));
+
+    Psi1Hist[iCent][0]->SetTitle(Form("West Psi_1 EPD (%i)", iCent));
+    Psi1Hist[iCent][1]->SetTitle(Form("East Psi_1 EPD (%i)", iCent));
+    Psi1Hist[iCent][2]->SetTitle(Form("Comb Psi_1 EPD (%i)", iCent));
+    
+    Psi2Hist[iCent][0]->SetTitle(Form("West Psi_2 TPC (%i)", iCent));
+    Psi2Hist[iCent][1]->SetTitle(Form("East Psi_2 TPC (%i)", iCent));
+    Psi2Hist[iCent][2]->SetTitle(Form("Comb Psi_2 TPC (%i)", iCent));
 
   }
 
 }
 
 
-void StKFParticleAnalysisMaker::CreatePzDist() {
-  for(int iProf=0; iProf!=9; iProf++){
+void StKFParticleAnalysisMaker::CreateKFPHists() {
+  for(int iCent=0; iCent!=9; iCent++){
     for(int iSub=0; iSub!=2; iSub++){
-      Cos_Teta_AverVsPhi[iProf][iSub] = new TProfile(Form("Cos_Teta_AverVsPhi_%i_%i", iProf, iSub), "", 6, 0, TMath::Pi());
-      Cos_Teta_AverVsPhi_Bar[iProf][iSub] = new TProfile(Form("Cos_Teta_AverVsPhi_Bar_%i_%i", iProf, iSub), "", 6, 0, TMath::Pi());
+      prSin_diffPhiPsi1[iCent][iSub] = new TProfile(Form("prSin_diffPhiPsi1_%i_%i", iCent, iSub), "", 6, 0, TMath::Pi());
+      prCos_diffPhiPsi1[iCent][iSub] = new TProfile(Form("prCos_diffPhiPsi1_%i_%i", iCent, iSub), "", 6, 0, TMath::Pi());
+      prCos_theta[iCent][iSub] = new TProfile(Form("prCos_theta_%i_%i", iCent, iSub), "", 6, 0, TMath::Pi());
+      prSin_theta[iCent][iSub] = new TProfile(Form("prSin_theta_%i_%i", iCent, iSub), "", 6, 0, TMath::Pi());
 
-      //For inv mass method 
-      Cos_TetaSin_PhiVsInvMass[iProf][iSub] = new TProfile(Form("Cos_TetaSin_PhiVsInvMass_%i_%i", iProf, iSub), "", 30, 1.1, 1.13);
-      Cos_TetaSin_PhiBarVsInvMass[iProf][iSub] = new TProfile(Form("Cos_TetaSin_PhiBarVsInvMass_%i_%i", iProf, iSub), "", 30, 1.1, 1.13);
+      prSin_diffPhiPsi1_LamBar[iCent][iSub] = new TProfile(Form("prSin_diffPhiPsi1_LamBar_%i_%i", iCent, iSub), "", 6, 0, TMath::Pi());
+      prCos_diffPhiPsi1_LamBar[iCent][iSub] = new TProfile(Form("prCos_diffPhiPsi1_LamBar_%i_%i", iCent, iSub), "", 6, 0, TMath::Pi());
+      prCos_theta_LamBar[iCent][iSub] = new TProfile(Form("prCos_theta_LamBar_%i_%i", iCent, iSub), "", 6, 0, TMath::Pi());
+      prSin_theta_LamBar[iCent][iSub] = new TProfile(Form("prSin_theta_LamBar_%i_%i", iCent, iSub), "", 6, 0, TMath::Pi());
     }
-    Cos_Teta_AverVsPhi[iProf][0]->SetTitle(Form("CosThetaVsPhi if Psi_E+W_TPC (%i)", iProf));
-    Cos_Teta_AverVsPhi[iProf][1]->SetTitle(Form("CosThetaVsPhi if E+W TPC (%i)", iProf));
 
-    Cos_Teta_AverVsPhi_Bar[iProf][0]->SetTitle(Form("CosThetaVsPhi_Bar if Psi_E+W_TPC (%i)", iProf));
-    Cos_Teta_AverVsPhi_Bar[iProf][1]->SetTitle(Form("CosThetaVsPhi_Bar if E+W TPC (%i)", iProf));
+    prSin_diffPhiPsi1[iCent][0]->SetTitle(Form("Sin(Psi1-phi) for Lam Vs phi - Psi2_e/w cent=(%i)", iCent));
+    prSin_diffPhiPsi1[iCent][1]->SetTitle(Form("Sin(Psi1-phi) for Lam Vs phi - Psi2_comb cent=(%i)", iCent));
+    prCos_diffPhiPsi1[iCent][0]->SetTitle(Form("Cos(Psi1-phi) for Lam Vs phi - Psi2_e/w cent=(%i)", iCent));
+    prCos_diffPhiPsi1[iCent][1]->SetTitle(Form("Cos(Psi1-phi) for Lam Vs phi - Psi2_comb cent=(%i)", iCent));
+    prCos_theta[iCent][0]->SetTitle(Form("Cos(theta) for Lam Vs phi - Psi2_e/w cent=(%i)", iCent));
+    prCos_theta[iCent][1]->SetTitle(Form("Cos(theta) for Lam Vs phi - Psi2_comb cent=(%i)", iCent));
+    prSin_theta[iCent][0]->SetTitle(Form("Sin(theta) for Lam Vs phi - Psi2_e/w cent=(%i)", iCent));
+    prSin_theta[iCent][1]->SetTitle(Form("Sin(theta) for Lam Vs phi - Psi2_comb cent=(%i)", iCent));
 
-    Cos_TetaSin_PhiVsInvMass[iProf][0]->SetTitle(Form("CosThetaSinPhiVsInvMass if Psi_E+W_TPC (%i)", iProf));
-    Cos_TetaSin_PhiVsInvMass[iProf][1]->SetTitle(Form("CosThetaSinPhiVsInvMass if E+W TPC (%i)", iProf));
-
-    Cos_TetaSin_PhiBarVsInvMass[iProf][0]->SetTitle(Form("CosThetaSinPhiVsInvMass_Bar if Psi_E+W_TPC (%i)", iProf));
-    Cos_TetaSin_PhiBarVsInvMass[iProf][1]->SetTitle(Form("CosThetaSinPhiVsInvMass_Bar if E+W TPC (%i)", iProf));
-        
-    //<Cos(ThtaStar)> Vs Phi for pt and centrality
-    for(int iPt=0; iPt!=5; iPt++){
-      for(int iSub=0; iSub!=2; iSub++){
-        Cos_TetaVsPhi_Pt[iProf][iPt][iSub] = new TProfile(Form("Cos_TetaVsPhi_Pt_%i_%i_%i", iProf, iPt, iSub), "", 6, 0, TMath::Pi());
-        Cos_TetaBarVsPhi_Pt[iProf][iPt][iSub] = new TProfile(Form("Cos_TetaBarVsPhi_Pt_%i_%i_%i", iProf, iPt, iSub), "", 6, 0, TMath::Pi());
-      }
-      Cos_TetaVsPhi_Pt[iProf][iPt][0]->SetTitle(Form("CosThetaVsPhi if Psi_E+W_TPC, cent=(%i), pT=(%i)", iProf, iPt));
-      Cos_TetaVsPhi_Pt[iProf][iPt][1]->SetTitle(Form("CosThetaVsPhi if E+W TPC, cent=(%i), pT=(%i)", iProf, iPt));
-
-      Cos_TetaBarVsPhi_Pt[iProf][iPt][0]->SetTitle(Form("CosThetaVsPhi_Bar if Psi_E+W_TPC, cent=(%i), pT=(%i)", iProf, iPt));
-      Cos_TetaBarVsPhi_Pt[iProf][iPt][1]->SetTitle(Form("CosThetaVsPhi_Bar if E+W TPC, cent=(%i), pT=(%i)", iProf, iPt));        
-    }    
-
-    
-    //For inv mass method  
-
-    InvMLamCent[iProf] = new TH1F(Form("InvMLamCent[%i]", iProf), Form("InvMLamCent[%i]", iProf), 125, 1.1, 1.13);
-    InvMLamBarCent[iProf] = new TH1F(Form("InvMLamBarCent[%i]", iProf), Form("InvMLamBarCent[%i]", iProf), 125, 1.1, 1.13);
-
-    Cos_TetaSin_PhiVsInvMass_EPD[iProf] = new TProfile(Form("Cos_TetaSin_PhiVsInvMass_EPD_%i", iProf), Form("Cos_TetaSin_PhiVsInvMass_EPD[%i]", iProf), 30, 1.1, 1.13);
-    Cos_TetaSin_PhiBarVsInvMass_EPD[iProf] = new TProfile(Form("Cos_TetaSin_PhiBarVsInvMass_EPD_%i", iProf), Form("Cos_TetaSin_PhiBarVsInvMass_EPD[%i]", iProf), 30, 1.1, 1.13);
-
-        
+    prSin_diffPhiPsi1_LamBar[iCent][0]->SetTitle(Form("Sin(Psi1-phi) for LamBar Vs phi - Psi2_e/w cent=(%i)", iCent));
+    prSin_diffPhiPsi1_LamBar[iCent][1]->SetTitle(Form("Sin(Psi1-phi) for LamBar Vs phi - Psi2_comb cent=(%i)", iCent));
+    prCos_diffPhiPsi1_LamBar[iCent][0]->SetTitle(Form("Cos(Psi1-phi) for LamBar Vs phi - Psi2_e/w cent=(%i)", iCent));
+    prCos_diffPhiPsi1_LamBar[iCent][1]->SetTitle(Form("Cos(Psi1-phi) for LamBar Vs phi - Psi2_comb cent=(%i)", iCent));
+    prCos_theta_LamBar[iCent][0]->SetTitle(Form("Cos(theta) for LamBar Vs phi - Psi2_e/w cent=(%i)", iCent));
+    prCos_theta_LamBar[iCent][1]->SetTitle(Form("Cos(theta) for LamBar Vs phi - Psi2_comb cent=(%i)", iCent));
+    prSin_theta_LamBar[iCent][0]->SetTitle(Form("Sin(theta) for LamBar Vs phi - Psi2_e/w cent=(%i)", iCent));
+    prSin_theta_LamBar[iCent][1]->SetTitle(Form("Sin(theta) for LamBar Vs phi - Psi2_comb cent=(%i)", iCent));
   }
-  
-  //<Cos2(ThetaStar)> Vs Phi for centrality
-  Cos2_TetaVsPhi = new TProfile("Cos2_TetaVsPhi", "Cos2_TetaVsPhi", 9, 0, 9);
-  Cos2_TetaBarVsPhi = new TProfile("Cos2_TetaBarVsPhi", "Cos2_TetaBarVsPhi", 9, 0, 9);
-  
-    
-  //<Cos2(ThtaStar)> Vs Phi for pt
-  for(int iPt=0; iPt!=5; iPt++){
-    Cos2_TetaVsPhi_Pt[iPt] = new TProfile(Form("Cos2_TetaVsPhi_Pt_%i", iPt), Form("Cos2_TetaVsPhi_Pt_%i", iPt), 9, 0, 9);
-    Cos2_TetaBarVsPhi_Pt[iPt] = new TProfile(Form("Cos2_TetaBarVsPhi_Pt_%i", iPt), Form("Cos2_TetaBarVsPhi_Pt_%i", iPt), 9, 0, 9);
-    
-  }
-
-
-}
-
-void StKFParticleAnalysisMaker::CreatePzVsEtaDist() {
-
-    for(int iCent = 0; iCent!=9; iCent++){
-      for(int iEta = 0; iEta!=9; iEta++){
-        for(int iSub=0; iSub!=2; iSub++){
-          Cos_TetaVsPhi_Eta[iCent][iEta][iSub] = new TProfile(Form("Cos_TetaVsPhi_Eta_%i_%i_%i", iCent, iEta, iSub), "", 6, 0, TMath::Pi());
-          Cos_TetaBarVsPhi_Eta[iCent][iEta][iSub] = new TProfile(Form("Cos_TetaBarVsPhi_Eta_%i_%i_%i", iCent, iEta, iSub), "", 6, 0, TMath::Pi());
-        }
-        Cos_TetaVsPhi_Eta[iCent][iEta][0]->SetTitle(Form("CosThetaVsPhi if Psi_E+W_TPC, cent=(%i), eta=(%i)", iCent, iEta));
-        Cos_TetaVsPhi_Eta[iCent][iEta][1]->SetTitle(Form("CosThetaVsPhi if E+W TPC, cent=(%i), eta=(%i)", iCent, iEta));
-        
-        Cos_TetaBarVsPhi_Eta[iCent][iEta][0]->SetTitle(Form("CosThetaVsPhi_Bar if Psi_E+W_TPC, cent=(%i), eta=(%i)", iCent, iEta));
-        Cos_TetaBarVsPhi_Eta[iCent][iEta][1]->SetTitle(Form("CosThetaVsPhi_Bar if E+W TPC, cent=(%i), eta=(%i)", iCent, iEta));        
-	    }
-    }
-
-    for(int iEta = 0; iEta!=9; iEta++){
-      Cos2_TetaVsPhi_Eta[iEta] = new TProfile(Form("Cos2_TetaVsPhi_Eta_%i", iEta), Form("Cos2_TetaVsPhi_Eta_%i", iEta), 9, 0, 9);
-      Cos2_TetaBarVsPhi_Eta[iEta] = new TProfile(Form("Cos2_TetaBarVsPhi_Eta_%i", iEta), Form("Cos2_TetaBarVsPhi_Eta_%i", iEta), 9, 0, 9);
-    }
-
 }
 
 
-double StKFParticleAnalysisMaker::GetPsi(double Qx, double Qy){
+double StKFParticleAnalysisMaker::GetPsi(int iOrd, double Qx, double Qy){
     double Psi;
-    Psi = atan2(Qy, Qx)/2.;
-    if(Psi<0.) Psi += TMath::Pi();
+    Psi = atan2(Qy, Qx)/iOrd;
+    if(Psi<0.) Psi += 2*TMath::Pi() / iOrd;
     return Psi;
 }
 
@@ -1385,7 +1270,8 @@ void StKFParticleAnalysisMaker::GetCentring() {
   TFile *file = new TFile("/star/u/mmorozov/7p7SecondRP/correctionsEP_output/output6sem_Second_7p7.root", "read");	
   
   for(int iSub=0; iSub!=2*nSub; iSub++){
-    QvecProf_TH[iSub] = (TH1F*)file->Get(Form("QvecProf_%i", iSub));
+    Qvec1Prof_TH[iSub] = (TH1F*)file->Get(Form("Qvec1Prof_%i", iSub));
+    Qvec2Prof_TH[iSub] = (TH1F*)file->Get(Form("Qvec2Prof_%i", iSub));
   }
 }
 
@@ -1395,8 +1281,22 @@ void StKFParticleAnalysisMaker::GetFlattening() {
 
   for(int iProf=0; iProf!=10; iProf++){
     for(int iSub=0; iSub!=nSub; iSub++){
-      Coef_A_n_TH[iProf][iSub] = (TH1F*)file->Get(Form("Coef_A_n_%i_%i", iProf, iSub));
-      Coef_B_n_TH[iProf][iSub] = (TH1F*)file->Get(Form("Coef_B_n_%i_%i", iProf, iSub));
+      Coef_A_n_TH_Psi1[iProf][iSub] = (TH1F*)file->Get(Form("Coef_A_n_Psi1_%i_%i", iProf, iSub));
+      Coef_B_n_TH_Psi1[iProf][iSub] = (TH1F*)file->Get(Form("Coef_B_n_Psi1_%i_%i", iProf, iSub));
+
+      Coef_A_n_TH_Psi2[iProf][iSub] = (TH1F*)file->Get(Form("Coef_A_n_Psi2_%i_%i", iProf, iSub));
+      Coef_B_n_TH_Psi2[iProf][iSub] = (TH1F*)file->Get(Form("Coef_B_n_Psi2_%i_%i", iProf, iSub));
     }
+  }
+}
+
+void StKFParticleAnalysisMaker::GetWeightCorr() {
+  TFile *file = new TFile("/star/u/mmorozov/14p5MakeCorrections/correctionsEP_output/outputV1.root", "read");
+
+  for(int iCent=0; iCent!=9; iCent++){
+    for(int iSub=0; iSub!=2; iSub++){
+      v1_average[iCent][iSub] = (TProfile*)file->Get(Form("v1_average_%i_%i", iCent, iSub));
+    }
+        
   }
 }

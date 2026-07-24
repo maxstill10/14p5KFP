@@ -27,7 +27,7 @@
 
 const int PolPartNum = 12;
 const int DetNum = 3;
-const int nSub = 7;//Numbers of Psi
+const int nSub = 3;//Numbers of Psi
 		   //0-West TPC
 		   //1-East TPC
 		   //2-Comb TPC
@@ -107,54 +107,39 @@ class StKFParticleAnalysisMaker : public StMaker {
   //My variables
   int pT_bin, eta_bin;
   const Char_t *runnumber;
+  double QWeight1[nSub] = {}, QWeight2[nSub] = {};
+  double Qvec1[2*nSub] = {}, Qvec2[2*nSub] = {};
+  double Psi1[nSub] = {}, Psi2[nSub] = {};
   
   //My hist
-  TH1F *Coef_A_n_TH[10][nSub];
-  TH1F *Coef_B_n_TH[10][nSub];
-  TH1F *QvecProf_TH[nSub*2]; 
+  TProfile *v1_average[9][2];
 
-  TH1F *QvecHist[9][2*nSub];
-  TH1F *Psi2Hist[9][nSub];; 
+  TH1F *Coef_A_n_TH_Psi1[10][nSub];
+  TH1F *Coef_B_n_TH_Psi1[10][nSub];
+  TH1F *Coef_A_n_TH_Psi2[10][nSub];
+  TH1F *Coef_B_n_TH_Psi2[10][nSub];
+  
+  TH1F *Qvec1Prof_TH[nSub*2];
+  TH1F *Qvec2Prof_TH[nSub*2]; 
 
-  TProfile *CosOfDiff;
-  TProfile *CosOfDiff_EPD;
+  TH1F *Qvec1Hist[9][2*nSub];
+  TH1F *Qvec2Hist[9][2*nSub];
+  TH1F *Psi2Hist[9][nSub];
+  TH1F *Psi2Hist[9][nSub];
+
+  TProfile *CosOfDiff_1;
+  TProfile *CosOfDiff_2;
 
   //For Pz
-  TProfile *Cos_Teta_AverVsPhi[9][2];
-  TProfile *Cos_Teta_AverVsPhi_Bar[9][2];
+  TProfile *prSin_diffPhiPsi1[9][2];
+  TProfile *prCos_diffPhiPsi1[9][2];
+  TProfile *prCos_theta[9][2];
+  TProfile *prSin_theta[9][2];
 
-  TProfile *Cos_TetaVsPhi_Pt[9][5][2];
-  TProfile *Cos_TetaBarVsPhi_Pt[9][5][2];
-
-  TProfile *Cos2_TetaVsPhi;
-  TProfile *Cos2_TetaBarVsPhi;
-
-  TProfile *Cos2_TetaVsPhi_Pt[5];
-  TProfile *Cos2_TetaBarVsPhi_Pt[5];
-
-  //Profiles for inv mass method
-  TProfile *Cos_TetaSin_PhiVsInvMass[9][2];
-  TProfile *Cos_TetaSin_PhiBarVsInvMass[9][2];
-
-  TH1F *InvMLamCent[9];
-  TH1F *InvMLamBarCent[9];
-
-  //EPD
-  TProfile *Cos_TetaSin_PhiVsInvMass_EPD[9];
-  TProfile *Cos_TetaSin_PhiBarVsInvMass_EPD[9];
-
-  
-  //For Pz Vs Eta
-  TProfile *Cos_TetaBarVsPhi_Eta[9][9][2];
-  TProfile *Cos_TetaVsPhi_Eta[9][9][2];
-  TProfile *Cos2_TetaVsPhi_Eta[9];
-  TProfile *Cos2_TetaBarVsPhi_Eta[9];
- 
-
-  //KFP
-  TH1F *InvMassLambdaKFP;
-  TH1F *InvMassLambdaBarKFP;
-  TH1F *MomKFP;
+  TProfile *prSin_diffPhiPsi1_LamBar[9][2];
+  TProfile *prCos_diffPhiPsi1_LamBar[9][2];
+  TProfile *prCos_theta_LamBar[9][2];
+  TProfile *prSin_theta_LamBar[9][2];
 
   StEpdEpFinder *etaFinder;
   StEpdEpFinder *etaVzFinder[14];
@@ -175,11 +160,11 @@ class StKFParticleAnalysisMaker : public StMaker {
   float mTrgEff;
   //Its My Functions MAXIM
   void CreateEPDist();
+  void CreateKFPHists()
   void GetCentring();
+  void GetWeightCorr()
   void GetFlattening();
-  void CreatePzDist();
-  void CreatePzVsEtaDist();
-  double GetPsi(double Qx, double Qy);
+  double GetPsi(int iOrd, double Qx, double Qy);
   
 /*
   void FillTH1F(int PolNPart, StFemtoV0 particle, int CentralityID);
