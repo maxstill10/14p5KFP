@@ -658,6 +658,7 @@ Int_t StKFParticleAnalysisMaker::Make()
     TT = femtoEpdHit->tile();
     EW = femtoEpdHit->side();
     w = femtoEpdHit->nMIP();
+    row = femtoEpdHit->row();
 
     double wEff_EPD = w;
     if(wEff_EPD<0.3) continue;
