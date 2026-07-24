@@ -105,11 +105,13 @@ class StKFParticleAnalysisMaker : public StMaker {
   void InitEpFinders();
 
   //My variables
-  int pT_bin, eta_bin;
   const Char_t *runnumber;
-  double QWeight1[nSub] = {}, QWeight2[nSub] = {};
-  double Qvec1[2*nSub] = {}, Qvec2[2*nSub] = {};
-  double Psi1[nSub] = {}, Psi2[nSub] = {};
+  double QWeight1[nSub], QWeight2[nSub];
+  double Qvec1[2*nSub], Qvec2[2*nSub];
+  double Psi1[nSub], Psi2[nSub];
+  double deltaPsi1[nSub], deltaPsi1[nSub];
+  int PP, TT, EW, iPsi, iSide, row;
+  double sin_diffPsi1Phi, cos_diffPsi1Phi;
   
   //My hist
   TProfile *v1_average[9][2];
@@ -124,7 +126,7 @@ class StKFParticleAnalysisMaker : public StMaker {
 
   TH1F *Qvec1Hist[9][2*nSub];
   TH1F *Qvec2Hist[9][2*nSub];
-  TH1F *Psi2Hist[9][nSub];
+  TH1F *Psi1Hist[9][nSub];
   TH1F *Psi2Hist[9][nSub];
 
   TProfile *CosOfDiff_1;
@@ -160,9 +162,9 @@ class StKFParticleAnalysisMaker : public StMaker {
   float mTrgEff;
   //Its My Functions MAXIM
   void CreateEPDist();
-  void CreateKFPHists()
+  void CreateKFPHists();
   void GetCentring();
-  void GetWeightCorr()
+  void GetWeightCorr();
   void GetFlattening();
   double GetPsi(int iOrd, double Qx, double Qy);
   

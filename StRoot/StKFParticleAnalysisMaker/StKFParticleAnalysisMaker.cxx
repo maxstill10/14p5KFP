@@ -588,9 +588,8 @@ Int_t StKFParticleAnalysisMaker::Make()
 
   // Here is my Polarization analysis
   double dphi = 0., Phi_ang = 0., phi_Lam = 0.;
-  double w = 0., dphi_EPD = 0.;
-  double deltaPsi2[nSub] = {};  
-  int PP, TT, EW, iPsi = 0, iSide = 0;
+  double w = 0.;
+    
   
 
   
