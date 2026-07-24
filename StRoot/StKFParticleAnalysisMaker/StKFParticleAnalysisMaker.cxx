@@ -611,12 +611,12 @@ Int_t StKFParticleAnalysisMaker::Make()
   if (cent < 0 || isBadRun  || isPileUpEvt) return kStOk;
 
   for(int iSub=0; iSub!=nSub; iSub++){
-    Qvec1[2*iSub] = 0.;
-    Qvec1[2*iSub+1] = 0.;
-    Qvec2[2*iSub] = 0.;
-    Qvec2[2*iSub+1] = 0.;
-    QWeight1[iSub] = 0.;
-    QWeight2[iSub] = 0.;
+    Qvec_1[2*iSub] = 0.;
+    Qvec_1[2*iSub+1] = 0.;
+    Qvec_2[2*iSub] = 0.;
+    Qvec_2[2*iSub+1] = 0.;
+    QWeight_1[iSub] = 0.;
+    QWeight_2[iSub] = 0.;
     Psi1[iSub] = 0.;
     Psi2[iSub] = 0.;
   }
@@ -638,9 +638,9 @@ Int_t StKFParticleAnalysisMaker::Make()
     if(eta>0) iSide = 0;//West
     else if(eta<0) iSide = 1;//East
 
-    Qvec2[2*iSide] += wEff*TMath::Cos(2*Phi_ang);
-    Qvec2[2*iSide+1] += wEff*TMath::Sin(2*Phi_ang);
-    QWeight2[iSide] += wEff;   
+    Qvec_2[2*iSide] += wEff*TMath::Cos(2*Phi_ang);
+    Qvec_2[2*iSide+1] += wEff*TMath::Sin(2*Phi_ang);
+    QWeight_2[iSide] += wEff;   
 
   }//for (int i = 0; i < nPicoTracks; ++i)
 
@@ -686,8 +686,8 @@ Int_t StKFParticleAnalysisMaker::Make()
   //.........................................start of RP calculation.....................................
   bool check = true;
   for(int iSub=0; iSub!=nSub-1; iSub++){
-    if(QWeight1[iSub] == 0) check = false;
-    if(QWeight2[iSub] == 0) check = false;
+    if(QWeight_1[iSub] == 0) check = false;
+    if(QWeight_2[iSub] == 0) check = false;
   }
   if(!check) return kStOk;
 
@@ -698,9 +698,9 @@ Int_t StKFParticleAnalysisMaker::Make()
     Qvec1[2*iSub+1] = Qvec1[2*iSub+1]/QWeight1[iSub];
     if(fabs(Qvec1[2*iSub])>999 || fabs(Qvec1[2*iSub+1])>999) check = false;
 
-    Qvec2[2*iSub] = Qvec2[2*iSub]/QWeight2[iSub];
-    Qvec2[2*iSub+1] = Qvec2[2*iSub+1]/QWeight2[iSub];
-    if(fabs(Qvec2[2*iSub])>999 || fabs(Qvec2[2*iSub+1])>999) check = false;
+    Qvec_2[2*iSub] = Qvec_2[2*iSub]/QWeight2[iSub];
+    Qvec_2[2*iSub+1] = Qvec_2[2*iSub+1]/QWeight2[iSub];
+    if(fabs(Qvec_2[2*iSub])>999 || fabs(Qvec_2[2*iSub+1])>999) check = false;
   }
   if(!check) return kStOk;
   Qvec_1[4] = Qvec_1[0] - Qvec_1[2];
@@ -711,16 +711,16 @@ Int_t StKFParticleAnalysisMaker::Make()
   
   //Recentering
   for(int iSub = 0; iSub!=2*nSub; iSub++){
-    Qvec1[iSub] -= Qvec1Prof_TH[iSub]->GetBinContent(cent+1);
-    Qvec2[iSub] -= Qvec2Prof_TH[iSub]->GetBinContent(cent+1);
+    Qvec_1[iSub] -= Qvec1Prof_TH[iSub]->GetBinContent(cent+1);
+    Qvec_2[iSub] -= Qvec2Prof_TH[iSub]->GetBinContent(cent+1);
   } 
 
 
   for(int iSub=0; iSub!=nSub; iSub++){
-    Psi1[iSub] = GetPsi(1, Qvec1[2*iSub], Qvec1[2*iSub+1]);
+    Psi1[iSub] = GetPsi(1, Qvec_1[2*iSub], Qvec_1[2*iSub+1]);
     if(Psi1[iSub] > 7) check = false;
 
-    Psi2[iSub] = GetPsi(2, Qvec2[2*iSub], Qvec2[2*iSub+1]);
+    Psi2[iSub] = GetPsi(2, Qvec_2[2*iSub], Qvec_2[2*iSub+1]);
     if(Psi2[iSub] > 3.5) check = false;
   }
   if(!check) return kStOk;
@@ -752,12 +752,12 @@ Int_t StKFParticleAnalysisMaker::Make()
   
   //Fill histograms
   for(int iSub = 0; iSub!=nSub; iSub++){
-    Qvec1Hist[cent][2*iSub]->Fill(Qvec1[2*iSub]);
-    Qvec1Hist[cent][2*iSub+1]->Fill(Qvec1[2*iSub+1]);
+    Qvec1Hist[cent][2*iSub]->Fill(Qvec_1[2*iSub]);
+    Qvec1Hist[cent][2*iSub+1]->Fill(Qvec_1[2*iSub+1]);
     Psi1Hist[cent][iSub]->Fill(Psi1[iSub]);
 
-    Qvec2Hist[cent][2*iSub]->Fill(Qvec2[2*iSub]);
-    Qvec2Hist[cent][2*iSub+1]->Fill(Qvec2[2*iSub+1]);
+    Qvec2Hist[cent][2*iSub]->Fill(Qvec_2[2*iSub]);
+    Qvec2Hist[cent][2*iSub+1]->Fill(Qvec_2[2*iSub+1]);
     Psi2Hist[cent][iSub]->Fill(Psi2[iSub]);
   } 
 
