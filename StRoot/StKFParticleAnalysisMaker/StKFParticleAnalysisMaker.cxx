@@ -694,12 +694,12 @@ Int_t StKFParticleAnalysisMaker::Make()
   //Get Q vectors
   
   for(int iSub=0; iSub!=nSub-1; iSub++){
-    Qvec1[2*iSub] = Qvec1[2*iSub]/QWeight1[iSub];
-    Qvec1[2*iSub+1] = Qvec1[2*iSub+1]/QWeight1[iSub];
+    Qvec_1[2*iSub] = Qvec_1[2*iSub]/QWeight_1[iSub];
+    Qvec_1[2*iSub+1] = Qvec_1[2*iSub+1]/QWeight_1[iSub];
     if(fabs(Qvec1[2*iSub])>999 || fabs(Qvec1[2*iSub+1])>999) check = false;
 
-    Qvec_2[2*iSub] = Qvec_2[2*iSub]/QWeight2[iSub];
-    Qvec_2[2*iSub+1] = Qvec_2[2*iSub+1]/QWeight2[iSub];
+    Qvec_2[2*iSub] = Qvec_2[2*iSub]/QWeight_2[iSub];
+    Qvec_2[2*iSub+1] = Qvec_2[2*iSub+1]/QWeight_2[iSub];
     if(fabs(Qvec_2[2*iSub])>999 || fabs(Qvec_2[2*iSub+1])>999) check = false;
   }
   if(!check) return kStOk;
