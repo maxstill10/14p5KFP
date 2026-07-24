@@ -696,7 +696,7 @@ Int_t StKFParticleAnalysisMaker::Make()
   for(int iSub=0; iSub!=nSub-1; iSub++){
     Qvec_1[2*iSub] = Qvec_1[2*iSub]/QWeight_1[iSub];
     Qvec_1[2*iSub+1] = Qvec_1[2*iSub+1]/QWeight_1[iSub];
-    if(fabs(Qvec1[2*iSub])>999 || fabs(Qvec1[2*iSub+1])>999) check = false;
+    if(fabs(Qvec_1[2*iSub])>999 || fabs(Qvec_1[2*iSub+1])>999) check = false;
 
     Qvec_2[2*iSub] = Qvec_2[2*iSub]/QWeight_2[iSub];
     Qvec_2[2*iSub+1] = Qvec_2[2*iSub+1]/QWeight_2[iSub];
