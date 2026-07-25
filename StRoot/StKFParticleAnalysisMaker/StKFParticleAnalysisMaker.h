@@ -106,10 +106,10 @@ class StKFParticleAnalysisMaker : public StMaker {
 
   //My variables
   const Char_t *runnumber;
-  double QWeight_1[nSub] = {}, QWeight_2[nSub] = {};
-  double Qvec_1[2*nSub] = {}, Qvec_2[2*nSub] = {};
-  double Psi1[nSub] = {}, Psi2[nSub] = {};
-  double deltaPsi1[nSub] = {}, deltaPsi2[nSub] = {};
+  double QWeight_1[nSub], QWeight_2[nSub];
+  double Qvec_1[2*nSub], Qvec_2[2*nSub];
+  double Psi1[nSub], Psi2[nSub];
+  double deltaPsi1[nSub], deltaPsi2[nSub];
   int PP, TT, EW, iPsi, iSide, row;
   double sin_diffPsi1Phi, cos_diffPsi1Phi;
   
