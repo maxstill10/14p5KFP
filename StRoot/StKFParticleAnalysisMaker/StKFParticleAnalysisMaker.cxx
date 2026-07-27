@@ -633,8 +633,6 @@ Int_t StKFParticleAnalysisMaker::Make()
     Psi2[iSub] = 0.;
   }
 
-  cout<<"0000"<<endl;
-
 
   Int_t nPicoTracks = fPicoDst->numberOfTracks();
   
@@ -696,7 +694,7 @@ Int_t StKFParticleAnalysisMaker::Make()
     }
   }
 
-  cout<<"1111"<<endl;
+  cout<<"0000"<<endl;
  
    
 
@@ -707,6 +705,8 @@ Int_t StKFParticleAnalysisMaker::Make()
     if(QWeight_2[iSub] == 0) check = false;
   }
   if(!check) return kStOk;
+
+  cout<<"1111"<<endl;
 
   //Get Q vectors
   
@@ -725,12 +725,16 @@ Int_t StKFParticleAnalysisMaker::Make()
   Qvec_2[4] = Qvec_2[0] + Qvec_2[2];
   Qvec_2[5] = Qvec_2[1] + Qvec_2[3];
 
+  cout<<"2222"<<endl;
+
   
   //Recentering
   for(int iSub = 0; iSub!=2*nSub; iSub++){
     Qvec_1[iSub] -= Qvec1Prof_TH[iSub]->GetBinContent(cent+1);
     Qvec_2[iSub] -= Qvec2Prof_TH[iSub]->GetBinContent(cent+1);
-  } 
+  }
+
+  cout<<"3333"<<endl;
 
 
   for(int iSub=0; iSub!=nSub; iSub++){
@@ -741,6 +745,8 @@ Int_t StKFParticleAnalysisMaker::Make()
     if(Psi2[iSub] > 3.5) check = false;
   }
   if(!check) return kStOk;
+
+  cout<<"4444"<<endl;
 
   
   //Flattaning
@@ -754,6 +760,8 @@ Int_t StKFParticleAnalysisMaker::Make()
     }
   }
 
+  cout<<"5555"<<endl;
+
   for(int iSub=0; iSub!=nSub; iSub++){
     Psi1[iSub] += deltaPsi1[iSub];
     while(Psi1[iSub]>2*TMath::Pi()) Psi1[iSub] -= 2*TMath::Pi();
@@ -765,6 +773,8 @@ Int_t StKFParticleAnalysisMaker::Make()
     while(Psi2[iSub]<0.0) Psi2[iSub] += TMath::Pi();
     deltaPsi2[iSub] = 0.0;
   }
+
+  cout<<"6666"<<endl;
   
   
   //Fill histograms
@@ -776,7 +786,9 @@ Int_t StKFParticleAnalysisMaker::Make()
     Qvec2Hist[cent][2*iSub]->Fill(Qvec_2[2*iSub]);
     Qvec2Hist[cent][2*iSub+1]->Fill(Qvec_2[2*iSub+1]);
     Psi2Hist[cent][iSub]->Fill(Psi2[iSub]);
-  } 
+  }
+
+  cout<<"7777"<<endl;
 
 
   CosOfDiff_1->Fill(cent, TMath::Cos(Psi1[0] - Psi1[1]));
@@ -904,7 +916,7 @@ Int_t StKFParticleAnalysisMaker::Make()
     }//end of AntiLambda research
 
   }//for (int iParticle=0; iParticle<fStKFParticlePerformanceInterface->GetNReconstructedParticles(); iParticle++)
-  cout<<"3333"<<endl;
+  
  
   return kStOk; 
  
