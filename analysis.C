@@ -40,7 +40,7 @@ void removeValuesFromFile(const Char_t *filename)
 }
 
 
-void analysis(Char_t *inFileName = "st_physics_22158015_raw_1500005.picoDst.root" ,// "/star/u/alpatov/KFParticle/st_physics_19142027_raw_2500009.picoDst.root",
+void analysis(Char_t *inFileName = "../makeNewProd/st_physics_20124023_raw_3500008.picoDst.root" ,// "/star/u/alpatov/KFParticle/st_physics_19142027_raw_2500009.picoDst.root",
 Char_t *outFileName = "pico.root", Char_t *runFile = "095", bool isPico = true)
 {
 #if !defined(__CINT__)
@@ -49,7 +49,7 @@ Char_t *outFileName = "pico.root", Char_t *runFile = "095", bool isPico = true)
   //  gSystem->SetFPEMask(kInvalid | kDivByZero | kOverflow );
   gSystem->Load("StEpdUtil");
   
-  removeValuesFromFile(inFileName);
+  //removeValuesFromFile(inFileName);
 
   gROOT->LoadMacro("lMuDst.C");
 

@@ -1287,7 +1287,7 @@ double StKFParticleAnalysisMaker::GetPsi(int iOrd, double Qx, double Qy){
 
 
 void StKFParticleAnalysisMaker::GetCentring() {
-  TFile *file = new TFile("/star/u/mmorozov/7p7SecondRP/correctionsEP_output/output6sem_Second_7p7.root", "read");	
+  TFile *file = new TFile("/star/u/mmorozov/14p5MakeCorrections/correctionsEP_output/output6sem_FirstSecondRPCorr_14p5.root", "read");	
   
   for(int iSub=0; iSub!=2*nSub; iSub++){
     Qvec1Prof_TH[iSub] = (TH1F*)file->Get(Form("Qvec1Prof_%i", iSub));
@@ -1297,7 +1297,7 @@ void StKFParticleAnalysisMaker::GetCentring() {
 
 
 void StKFParticleAnalysisMaker::GetFlattening() {
-  TFile *file = new TFile("/star/u/mmorozov/7p7SecondRP/correctionsEP_output/outputCentred_Second_7p7.root", "read");
+  TFile *file = new TFile("/star/u/mmorozov/14p5MakeCorrections/correctionsEP_output/outputCentred_FirstSecondRPCorr_14p5.root", "read");
 
   for(int iProf=0; iProf!=10; iProf++){
     for(int iSub=0; iSub!=nSub; iSub++){
