@@ -725,18 +725,14 @@ Int_t StKFParticleAnalysisMaker::Make()
   Qvec_2[4] = Qvec_2[0] + Qvec_2[2];
   Qvec_2[5] = Qvec_2[1] + Qvec_2[3];
 
-  cout<<"2222"<<endl;
-
-  
+   
   //Recentering
   for(int iSub = 0; iSub!=2*nSub; iSub++){
     Qvec_1[iSub] -= Qvec1Prof_TH[iSub]->GetBinContent(cent+1);
     Qvec_2[iSub] -= Qvec2Prof_TH[iSub]->GetBinContent(cent+1);
   }
 
-  cout<<"3333"<<endl;
-
-
+  
   for(int iSub=0; iSub!=nSub; iSub++){
     Psi1[iSub] = GetPsi(1, Qvec_1[2*iSub], Qvec_1[2*iSub+1]);
     if(Psi1[iSub] > 7) check = false;
@@ -745,19 +741,7 @@ Int_t StKFParticleAnalysisMaker::Make()
     if(Psi2[iSub] > 3.5) check = false;
   }
   if(!check) return kStOk;
-
-  cout<<"4444"<<endl;
-
-  for(int iProf=0; iProf!=10; iProf++){
-    for(int iSub=0; iSub!=nSub; iSub++){
-      cout<<Form("Psi1 : %i, %i :", iProf, iSub)<<Coef_A_n_TH_Psi1[iProf][iSub]->GetBinContent(cent+1)*TMath::Cos((iProf+1)*Psi1[iSub]) + \
-                         Coef_B_n_TH_Psi1[iProf][iSub]->GetBinContent(cent+1)*TMath::Sin((iProf+1)*Psi1[iSub])<<endl;
-      
-      cout<<Form("Psi2 : %i, %i : ", iProf, iSub)<<Coef_A_n_TH_Psi2[iProf][iSub]->GetBinContent(cent+1)<<endl;
-      cout<<"B_n"<<Coef_B_n_TH_Psi2[iProf][iSub]->GetBinContent(cent+1)<<endl;
-    }
-  }
-
+  
   
   //Flattaning
   for(int iProf=0; iProf!=10; iProf++){
@@ -769,8 +753,6 @@ Int_t StKFParticleAnalysisMaker::Make()
                          Coef_B_n_TH_Psi2[iProf][iSub]->GetBinContent(cent+1)*TMath::Sin((iProf+1)*2*Psi2[iSub]);
     }
   }
-
-  cout<<"5555"<<endl;
 
   for(int iSub=0; iSub!=nSub; iSub++){
     Psi1[iSub] += deltaPsi1[iSub];
@@ -784,9 +766,7 @@ Int_t StKFParticleAnalysisMaker::Make()
     deltaPsi2[iSub] = 0.0;
   }
 
-  cout<<"6666"<<endl;
-  
-  
+    
   //Fill histograms
   for(int iSub = 0; iSub!=nSub; iSub++){
     Qvec1Hist[cent][2*iSub]->Fill(Qvec_1[2*iSub]);
@@ -798,15 +778,12 @@ Int_t StKFParticleAnalysisMaker::Make()
     Psi2Hist[cent][iSub]->Fill(Psi2[iSub]);
   }
 
-  cout<<"7777"<<endl;
-
-
+  
   CosOfDiff_1->Fill(cent, TMath::Cos(Psi1[0] - Psi1[1]));
   CosOfDiff_2->Fill(cent, TMath::Cos(2*(Psi2[0] - Psi2[1])));
 
   //.........................................end of RP calculation.....................................
-  cout<<"2222"<<endl;
-
+  
 
   //.........................................Pz calculating............................................
   for (int iParticle=0; iParticle<fStKFParticlePerformanceInterface->GetNReconstructedParticles(); iParticle++){
