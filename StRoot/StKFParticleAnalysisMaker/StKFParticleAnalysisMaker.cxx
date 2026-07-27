@@ -748,6 +748,16 @@ Int_t StKFParticleAnalysisMaker::Make()
 
   cout<<"4444"<<endl;
 
+  for(int iProf=0; iProf!=10; iProf++){
+    for(int iSub=0; iSub!=nSub; iSub++){
+      cout<<Form("Psi1 : %i, %i", iProf, iSub)<<Coef_A_n_TH_Psi1[iProf][iSub]->GetBinContent(cent+1)*TMath::Cos((iProf+1)*Psi1[iSub]) + \
+                         Coef_B_n_TH_Psi1[iProf][iSub]->GetBinContent(cent+1)*TMath::Sin((iProf+1)*Psi1[iSub])<<endl;
+      
+      cout<<Form("Psi2 : %i, %i", iProf, iSub)<<Coef_A_n_TH_Psi2[iProf][iSub]->GetBinContent(cent+1)*TMath::Cos((iProf+1)*2*Psi2[iSub]) + \
+                         Coef_B_n_TH_Psi2[iProf][iSub]->GetBinContent(cent+1)*TMath::Sin((iProf+1)*2*Psi2[iSub])<<endl;
+    }
+  }
+
   
   //Flattaning
   for(int iProf=0; iProf!=10; iProf++){
