@@ -205,6 +205,18 @@ Int_t StKFParticleAnalysisMaker::Init()
 
   }
 
+  for(int iSub=0; iSub!=nSub; iSub++){
+    QWeight_1[nSub] = 0.;
+    QWeight_2[nSub] = 0.;
+    Qvec_1[2*nSub] = 0.;
+    Qvec_2[2*nSub] = 0.;
+    Psi1[nSub] = 0.;
+    Psi2[nSub] = 0.;
+    deltaPsi1[nSub] = 0.;
+    deltaPsi2[nSub] = 0.;
+  }
+ 
+
   CreateEPDist();
   CreateKFPHists();
   GetWeightCorr();
@@ -621,6 +633,8 @@ Int_t StKFParticleAnalysisMaker::Make()
     Psi2[iSub] = 0.;
   }
 
+  cout<<"0000"<<endl;
+
 
   Int_t nPicoTracks = fPicoDst->numberOfTracks();
   
@@ -681,6 +695,8 @@ Int_t StKFParticleAnalysisMaker::Make()
       
     }
   }
+
+  cout<<"1111"<<endl;
  
    
 
@@ -767,6 +783,7 @@ Int_t StKFParticleAnalysisMaker::Make()
   CosOfDiff_2->Fill(cent, TMath::Cos(2*(Psi2[0] - Psi2[1])));
 
   //.........................................end of RP calculation.....................................
+  cout<<"2222"<<endl;
 
 
   //.........................................Pz calculating............................................
@@ -886,7 +903,8 @@ Int_t StKFParticleAnalysisMaker::Make()
       }//for (const auto& elem : particle.DaughterIds())
     }//end of AntiLambda research
 
-  }//for (int iParticle=0; iParticle<fStKFParticlePerformanceInterface->GetNReconstructedParticles(); iParticle++) 
+  }//for (int iParticle=0; iParticle<fStKFParticlePerformanceInterface->GetNReconstructedParticles(); iParticle++)
+  cout<<"3333"<<endl;
  
   return kStOk; 
  
