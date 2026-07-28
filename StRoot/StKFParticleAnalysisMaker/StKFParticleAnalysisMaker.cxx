@@ -754,7 +754,7 @@ Int_t StKFParticleAnalysisMaker::Make()
     Psi1[iSub] += deltaPsi1[iSub];
     while(Psi1[iSub]>2*TMath::Pi()) Psi1[iSub] -= 2*TMath::Pi();
     while(Psi1[iSub]<0.0) Psi1[iSub] += 2*TMath::Pi();
-    deltaPsi2[iSub] = 0.0;  
+    deltaPsi1[iSub] = 0.0;
     
     Psi2[iSub] += deltaPsi2[iSub]/2.;
     while(Psi2[iSub]>TMath::Pi()) Psi2[iSub] -= TMath::Pi();
