@@ -694,9 +694,7 @@ Int_t StKFParticleAnalysisMaker::Make()
     }
   }
 
-  cout<<"0000"<<endl;
- 
-   
+    
 
   //.........................................start of RP calculation.....................................
   bool check = true;
@@ -705,8 +703,6 @@ Int_t StKFParticleAnalysisMaker::Make()
     if(QWeight_2[iSub] == 0) check = false;
   }
   if(!check) return kStOk;
-
-  cout<<"1111"<<endl;
 
   //Get Q vectors
   
