@@ -818,17 +818,16 @@ Int_t StKFParticleAnalysisMaker::Make()
     TVector3 ParentVec(particle.GetPx(), particle.GetPy(), particle.GetPz()); 
 	
 
-cout<<"0000"<<endl;
     //Lambda research
     if(particle.GetPDG() == 3122){
-cout<<"1111"<<endl;
+
       if(ParentVec.Eta()<0) iPsi = 0;
       else iPsi = 1;
 
                           
       //Get daughters of Lambda hyperon
       for (const auto& elem : particle.DaughterIds()) {
-cout<<"2222"<<endl;
+
         if(elem<0) continue;
         KFParticle DaugParticle = fStKFParticleInterface->GetParticles()[elem];
         TVector3 DaugVec(DaugParticle.GetPx(), DaugParticle.GetPy(), DaugParticle.GetPz());
@@ -853,7 +852,8 @@ cout<<"2222"<<endl;
         dphi = phi_Lam-Psi2[2];
         while((dphi) < 0.) dphi+=TMath::Pi();//caus of dphi = (-2pi;pi)
         phi_bin = (int)(dphi/delta_phi);
-cout<<phi_bin<<endl;
+        if(phi_bin == 6) phi_bin = 5;
+
         prSin_diffPhiPsi1[cent][phi_bin][1]->Fill(inv_m, sin_diffPsi1Phi);
         prCos_diffPhiPsi1[cent][phi_bin][1]->Fill(inv_m, cos_diffPsi1Phi);
         prCos_theta[cent][phi_bin][1]->Fill(inv_m, proton_mom.CosTheta());
@@ -866,8 +866,9 @@ cout<<phi_bin<<endl;
         //research related Psi_e/w
         dphi = phi_Lam-Psi2[iPsi];
         while((dphi) < 0.) dphi+=TMath::Pi();
-        phi_bin = (int)(dphi/delta_phi);       
-cout<<phi_bin<<endl;
+        phi_bin = (int)(dphi/delta_phi);
+        if(phi_bin == 6) phi_bin = 5;       
+
         prSin_diffPhiPsi1[cent][phi_bin][0]->Fill(inv_m, sin_diffPsi1Phi);
         prCos_diffPhiPsi1[cent][phi_bin][0]->Fill(inv_m, cos_diffPsi1Phi);
         prCos_theta[cent][phi_bin][0]->Fill(inv_m, proton_mom.CosTheta());
@@ -884,7 +885,8 @@ cout<<phi_bin<<endl;
         while((dphi) < 0.) dphi+=2*TMath::Pi()/3;//caus of dphi = (-5pi/3;pi)
         if((dphi) > 2*TMath::Pi()/3) dphi-=2*TMath::Pi()/3;
         phi_bin = (int)(dphi/delta_phi);
-cout<<phi_bin<<endl;
+        if(phi_bin == 6) phi_bin = 5;
+
         prSin_diffPhiPsi1[cent][phi_bin][3]->Fill(inv_m, sin_diffPsi1Phi);
         prCos_diffPhiPsi1[cent][phi_bin][3]->Fill(inv_m, cos_diffPsi1Phi);
         prCos_theta[cent][phi_bin][3]->Fill(inv_m, proton_mom.CosTheta());
@@ -899,7 +901,8 @@ cout<<phi_bin<<endl;
         while((dphi) < 0.) dphi+=2*TMath::Pi()/3;//caus of dphi = (-5pi/3;pi)
         if((dphi) > 2*TMath::Pi()/3) dphi-=2*TMath::Pi()/3;
         phi_bin = (int)(dphi/delta_phi);
-cout<<phi_bin<<endl;
+        if(phi_bin == 6) phi_bin = 5;
+
         prSin_diffPhiPsi1[cent][phi_bin][2]->Fill(inv_m, sin_diffPsi1Phi);
         prCos_diffPhiPsi1[cent][phi_bin][2]->Fill(inv_m, cos_diffPsi1Phi);
         prCos_theta[cent][phi_bin][2]->Fill(inv_m, proton_mom.CosTheta());
@@ -945,9 +948,12 @@ cout<<phi_bin<<endl;
         phi_Lam = ParentVec.Phi();
         double inv_m = particle.GetMass();
         
+        //Psi2 dependences research
+        delta_phi = TMath::Pi()/6;
         dphi = phi_Lam-Psi2[2];
         while((dphi) < 0.) dphi+=TMath::Pi();//caus of dphi = (-2pi;pi)
-
+        phi_bin = (int)(dphi/delta_phi);
+        if(phi_bin == 6) phi_bin = 5;
 
         prSin_diffPhiPsi1_LamBar[cent][phi_bin][1]->Fill(inv_m, sin_diffPsi1Phi);
         prCos_diffPhiPsi1_LamBar[cent][phi_bin][1]->Fill(inv_m, cos_diffPsi1Phi);
@@ -961,7 +967,8 @@ cout<<phi_bin<<endl;
 
         dphi = phi_Lam-Psi2[iPsi];
         while((dphi) < 0.) dphi+=TMath::Pi();
-
+        phi_bin = (int)(dphi/delta_phi);
+        if(phi_bin == 6) phi_bin = 5;
 
         prSin_diffPhiPsi1_LamBar[cent][phi_bin][0]->Fill(inv_m, sin_diffPsi1Phi);
         prCos_diffPhiPsi1_LamBar[cent][phi_bin][0]->Fill(inv_m, cos_diffPsi1Phi);
@@ -979,7 +986,8 @@ cout<<phi_bin<<endl;
         while((dphi) < 0.) dphi+=2*TMath::Pi()/3;//caus of dphi = (-5pi/3;pi)
         if((dphi) > 2*TMath::Pi()/3) dphi-=2*TMath::Pi()/3;
         phi_bin = (int)(dphi/delta_phi);
-cout<<phi_bin<<endl;
+        if(phi_bin == 6) phi_bin = 5;
+
         prSin_diffPhiPsi1_LamBar[cent][phi_bin][3]->Fill(inv_m, sin_diffPsi1Phi);
         prCos_diffPhiPsi1_LamBar[cent][phi_bin][3]->Fill(inv_m, cos_diffPsi1Phi);
         prCos_theta_LamBar[cent][phi_bin][3]->Fill(inv_m, proton_mom.CosTheta());
@@ -994,7 +1002,8 @@ cout<<phi_bin<<endl;
         while((dphi) < 0.) dphi+=2*TMath::Pi()/3;//caus of dphi = (-5pi/3;pi)
         if((dphi) > 2*TMath::Pi()/3) dphi-=2*TMath::Pi()/3;
         phi_bin = (int)(dphi/delta_phi);
-cout<<phi_bin<<endl;
+        if(phi_bin == 6) phi_bin = 5;
+
         prSin_diffPhiPsi1_LamBar[cent][phi_bin][2]->Fill(inv_m, sin_diffPsi1Phi);
         prCos_diffPhiPsi1_LamBar[cent][phi_bin][2]->Fill(inv_m, cos_diffPsi1Phi);
         prCos_theta_LamBar[cent][phi_bin][2]->Fill(inv_m, proton_mom.CosTheta());
