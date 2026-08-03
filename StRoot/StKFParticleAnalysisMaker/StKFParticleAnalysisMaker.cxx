@@ -928,36 +928,37 @@ Int_t StKFParticleAnalysisMaker::Make()
         TLorentzVector proton_mom(DaugVec, DaugParticle.GetE());
         proton_mom.Boost(-(Lam_mom));
 
-        if(particle.GetMass() <= 1.111 || particle.GetMass() >= 1.121) continue;
+        //if(particle.GetMass() <= 1.111 || particle.GetMass() >= 1.121) continue;
 
         sin_diffPsi1Phi = TMath::Sin(proton_mom.Phi() - Psi1[2]);
         cos_diffPsi1Phi = TMath::Cos(proton_mom.Phi() - Psi1[2]);
 	
         //Pz studing
         phi_Lam = ParentVec.Phi();
+        double inv_m = particle.GetMass();
         
         dphi = phi_Lam-Psi2[2];
         while((dphi) < 0.) dphi+=TMath::Pi();//caus of dphi = (-2pi;pi)
 
 
-        prSin_diffPhiPsi1_LamBar[cent][1]->Fill(dphi, sin_diffPsi1Phi);
-        prCos_diffPhiPsi1_LamBar[cent][1]->Fill(dphi, cos_diffPsi1Phi);
-        prCos_theta_LamBar[cent][1]->Fill(dphi, proton_mom.CosTheta());
-        prSin_theta_LamBar[cent][1]->Fill(dphi, TMath::Sin(proton_mom.Theta()));
-        prSin_diffPhiPsi1Sin_theta_LamBar[cent][1]->Fill(dphi, sin_diffPsi1Phi*TMath::Sin(proton_mom.Theta()));
-        prCos_diffPhiPsi1Sin_theta_LamBar[cent][1]->Fill(dphi, cos_diffPsi1Phi*TMath::Sin(proton_mom.Theta()));
+        prSin_diffPhiPsi1_LamBar[cent][phi_bin][1]->Fill(inv_m, sin_diffPsi1Phi);
+        prCos_diffPhiPsi1_LamBar[cent][phi_bin][1]->Fill(inv_m, cos_diffPsi1Phi);
+        prCos_theta_LamBar[cent][phi_bin][1]->Fill(inv_m, proton_mom.CosTheta());
+        prSin_theta_LamBar[cent][phi_bin][1]->Fill(inv_m, TMath::Sin(proton_mom.Theta()));
+        prSin_diffPhiPsi1Sin_theta_LamBar[cent][phi_bin][1]->Fill(inv_m, sin_diffPsi1Phi*TMath::Sin(proton_mom.Theta()));
+        prCos_diffPhiPsi1Sin_theta_LamBar[cent][phi_bin][1]->Fill(inv_m, cos_diffPsi1Phi*TMath::Sin(proton_mom.Theta()));
         
 
         dphi = phi_Lam-Psi2[iPsi];
         while((dphi) < 0.) dphi+=TMath::Pi();
 
 
-        prSin_diffPhiPsi1_LamBar[cent][0]->Fill(dphi, sin_diffPsi1Phi);
-        prCos_diffPhiPsi1_LamBar[cent][0]->Fill(dphi, cos_diffPsi1Phi);
-        prCos_theta_LamBar[cent][0]->Fill(dphi, proton_mom.CosTheta());
-        prSin_theta_LamBar[cent][0]->Fill(dphi, TMath::Sin(proton_mom.Theta()));
-        prSin_diffPhiPsi1Sin_theta_LamBar[cent][0]->Fill(dphi, sin_diffPsi1Phi*TMath::Sin(proton_mom.Theta()));
-        prCos_diffPhiPsi1Sin_theta_LamBar[cent][0]->Fill(dphi, cos_diffPsi1Phi*TMath::Sin(proton_mom.Theta()));
+        prSin_diffPhiPsi1_LamBar[cent][phi_bin][0]->Fill(inv_m, sin_diffPsi1Phi);
+        prCos_diffPhiPsi1_LamBar[cent][phi_bin][0]->Fill(inv_m, cos_diffPsi1Phi);
+        prCos_theta_LamBar[cent][phi_bin][0]->Fill(inv_m, proton_mom.CosTheta());
+        prSin_theta_LamBar[cent][phi_bin][0]->Fill(inv_m, TMath::Sin(proton_mom.Theta()));
+        prSin_diffPhiPsi1Sin_theta_LamBar[cent][phi_bin][0]->Fill(inv_m, sin_diffPsi1Phi*TMath::Sin(proton_mom.Theta()));
+        prCos_diffPhiPsi1Sin_theta_LamBar[cent][phi_bin][0]->Fill(inv_m, cos_diffPsi1Phi*TMath::Sin(proton_mom.Theta()));
 
         //Psi3 dependences research
         delta_phi = TMath::Pi()/9;
@@ -1299,15 +1300,19 @@ void StKFParticleAnalysisMaker::CreateEPDist() {
       Qvec1Hist[iHist][2*iSub+1] = new TH1F(Form("Qvec1Hist_%i_%i", iHist, 2*iSub+1), "", 500, -1, 1);
       Qvec2Hist[iHist][2*iSub] = new TH1F(Form("Qvec2Hist_%i_%i", iHist, 2*iSub), "", 500, -1, 1);
       Qvec2Hist[iHist][2*iSub+1] = new TH1F(Form("Qvec2Hist_%i_%i", iHist, 2*iSub+1), "", 500, -1, 1);
+      Qvec3Hist[iHist][2*iSub] = new TH1F(Form("Qvec3Hist_%i_%i", iHist, 2*iSub), "", 500, -1, 1);
+      Qvec3Hist[iHist][2*iSub+1] = new TH1F(Form("Qvec3Hist_%i_%i", iHist, 2*iSub+1), "", 500, -1, 1);
       
       Psi1Hist[iHist][iSub] = new TH1F(Form("Psi1Hist_%i_%i", iHist, iSub), "", 140, 0, 7);
       Psi2Hist[iHist][iSub] = new TH1F(Form("Psi2Hist_%i_%i", iHist, iSub), "", 70, 0, 3.5);
+      Psi3Hist[iHist][iSub] = new TH1F(Form("Psi3Hist_%i_%i", iHist, iSub), "", 56, 0, 2.1);
     }
   }
 
 
   CosOfDiff_1 = new TProfile("CosOfDiff_1", "CosOfDiff for Psi_1", 9, 0, 9);
   CosOfDiff_2 = new TProfile("CosOfDiff_2", "CosOfDiff for Psi_2", 9, 0, 9);
+  CosOfDiff_3 = new TProfile("CosOfDiff_3", "CosOfDiff for Psi_3", 9, 0, 9);
 
   for(int iCent=0; iCent!=9; iCent++){
     Qvec1Hist[iCent][0]->SetTitle(Form("Qx West EPD first harm (%i)", iCent));
@@ -1324,6 +1329,13 @@ void StKFParticleAnalysisMaker::CreateEPDist() {
     Qvec2Hist[iCent][4]->SetTitle(Form("Qx Comb TPC second harm (%i)", iCent));
     Qvec2Hist[iCent][5]->SetTitle(Form("Qy Comb TPC second harm (%i)", iCent));
 
+    Qvec3Hist[iCent][0]->SetTitle(Form("Qx West TPC third harm (%i)", iCent));
+    Qvec3Hist[iCent][1]->SetTitle(Form("Qy West TPC third harm (%i)", iCent));
+    Qvec3Hist[iCent][2]->SetTitle(Form("Qx East TPC third harm (%i)", iCent));
+    Qvec3Hist[iCent][3]->SetTitle(Form("Qy East TPC third harm (%i)", iCent));
+    Qvec3Hist[iCent][4]->SetTitle(Form("Qx Comb TPC third harm (%i)", iCent));
+    Qvec3Hist[iCent][5]->SetTitle(Form("Qy Comb TPC third harm (%i)", iCent));
+
     Psi1Hist[iCent][0]->SetTitle(Form("West Psi_1 EPD (%i)", iCent));
     Psi1Hist[iCent][1]->SetTitle(Form("East Psi_1 EPD (%i)", iCent));
     Psi1Hist[iCent][2]->SetTitle(Form("Comb Psi_1 EPD (%i)", iCent));
@@ -1331,6 +1343,10 @@ void StKFParticleAnalysisMaker::CreateEPDist() {
     Psi2Hist[iCent][0]->SetTitle(Form("West Psi_2 TPC (%i)", iCent));
     Psi2Hist[iCent][1]->SetTitle(Form("East Psi_2 TPC (%i)", iCent));
     Psi2Hist[iCent][2]->SetTitle(Form("Comb Psi_2 TPC (%i)", iCent));
+
+    Psi3Hist[iCent][0]->SetTitle(Form("West Psi_3 TPC (%i)", iCent));
+    Psi3Hist[iCent][1]->SetTitle(Form("East Psi_3 TPC (%i)", iCent));
+    Psi3Hist[iCent][2]->SetTitle(Form("Comb Psi_3 TPC (%i)", iCent));
 
   }
 
@@ -1354,68 +1370,72 @@ void StKFParticleAnalysisMaker::CreateKFPHists() {
         prSin_theta_LamBar[iCent][iphi][iSub] = new TProfile(Form("prSin_theta_LamBar_%i_%i_%i", iCent, iphi, iSub), "", 30, 1.1, 1.13);
         prSin_diffPhiPsi1Sin_theta_LamBar[iCent][iphi][iSub] = new TProfile(Form("prSin_diffPhiPsi1Sin_theta_LamBar_%i_%i_%i", iCent, iphi, iSub), "", 30, 1.1, 1.13);
         prCos_diffPhiPsi1Sin_theta_LamBar[iCent][iphi][iSub] = new TProfile(Form("prCos_diffPhiPsi1Sin_theta_LamBar_%i_%i_%i", iCent, iphi, iSub), "", 30, 1.1, 1.13);
+
+        //Lambda invMass distributions
+        InvMLamDist[iCent][iphi][iSub] = new TH1F(Form("InvMLamDist_%i_%i_%i", iCent, iphi, iSub), Form("InvMLamDist_%i_%i_%i", iCent, iphi, iSub), 125, 1.1, 1.13);
+        InvMLamBarDist[iCent][iphi][iSub] = new TH1F(Form("InvMLamBarDist_%i_%i_%i", iCent, iphi, iSub), Form("InvMLamBarDist_%i_%i_%i", iCent, iphi, iSub), 125, 1.1, 1.13);
       }
 
       prSin_diffPhiPsi1[iCent][iphi][0]->SetTitle(Form("Sin(Psi1-phi) Vs InvMLam for cent=(%i), phi-Psi2_e/w=(%i)", iCent, iphi));
-      prSin_diffPhiPsi1[iCent][iphi][1]->SetTitle(Form("Sin(Psi1-phi) Vs InvMLam for cent=(%i), phi-Psi2_comb=(%i)", iCent));
+      prSin_diffPhiPsi1[iCent][iphi][1]->SetTitle(Form("Sin(Psi1-phi) Vs InvMLam for cent=(%i), phi-Psi2_comb=(%i)", iCent, iphi));
       prSin_diffPhiPsi1[iCent][iphi][2]->SetTitle(Form("Sin(Psi1-phi) Vs InvMLam for cent=(%i), phi-Psi3_e/w=(%i)", iCent, iphi));
-      prSin_diffPhiPsi1[iCent][iphi][3]->SetTitle(Form("Sin(Psi1-phi) Vs InvMLam for cent=(%i), phi-Psi3_comb=(%i)", iCent));
+      prSin_diffPhiPsi1[iCent][iphi][3]->SetTitle(Form("Sin(Psi1-phi) Vs InvMLam for cent=(%i), phi-Psi3_comb=(%i)", iCent, iphi));
 
-      prCos_diffPhiPsi1[iCent][iphi][0]->SetTitle(Form("Cos(Psi1-phi) Vs InvMLam for cent=(%i), phi-Psi2_e/w=(%i)", iCent));
-      prCos_diffPhiPsi1[iCent][iphi][1]->SetTitle(Form("Cos(Psi1-phi) Vs InvMLam for cent=(%i), phi-Psi2_comb=(%i)", iCent));
-      prCos_diffPhiPsi1[iCent][iphi][2]->SetTitle(Form("Cos(Psi1-phi) Vs InvMLam for cent=(%i), phi-Psi3_e/w=(%i)", iCent));
-      prCos_diffPhiPsi1[iCent][iphi][3]->SetTitle(Form("Cos(Psi1-phi) Vs InvMLam for cent=(%i), phi-Psi3_comb=(%i)", iCent));
+      prCos_diffPhiPsi1[iCent][iphi][0]->SetTitle(Form("Cos(Psi1-phi) Vs InvMLam for cent=(%i), phi-Psi2_e/w=(%i)", iCent, iphi));
+      prCos_diffPhiPsi1[iCent][iphi][1]->SetTitle(Form("Cos(Psi1-phi) Vs InvMLam for cent=(%i), phi-Psi2_comb=(%i)", iCent, iphi));
+      prCos_diffPhiPsi1[iCent][iphi][2]->SetTitle(Form("Cos(Psi1-phi) Vs InvMLam for cent=(%i), phi-Psi3_e/w=(%i)", iCent, iphi));
+      prCos_diffPhiPsi1[iCent][iphi][3]->SetTitle(Form("Cos(Psi1-phi) Vs InvMLam for cent=(%i), phi-Psi3_comb=(%i)", iCent, iphi));
       
-      prCos_theta[iCent][iphi][0]->SetTitle(Form("Cos(theta) Vs InvMLam for cent=(%i), phi-Psi2_e/w=(%i)", iCent));
-      prCos_theta[iCent][iphi][1]->SetTitle(Form("Cos(theta) Vs InvMLam for cent=(%i), phi-Psi2_comb=(%i)", iCent));
-      prCos_theta[iCent][iphi][2]->SetTitle(Form("Cos(theta) Vs InvMLam for cent=(%i), phi-Psi3_e/w=(%i)", iCent));
-      prCos_theta[iCent][iphi][3]->SetTitle(Form("Cos(theta) Vs InvMLam for cent=(%i), phi-Psi3_comb=(%i)", iCent));
+      prCos_theta[iCent][iphi][0]->SetTitle(Form("Cos(theta) Vs InvMLam for cent=(%i), phi-Psi2_e/w=(%i)", iCent, iphi));
+      prCos_theta[iCent][iphi][1]->SetTitle(Form("Cos(theta) Vs InvMLam for cent=(%i), phi-Psi2_comb=(%i)", iCent, iphi));
+      prCos_theta[iCent][iphi][2]->SetTitle(Form("Cos(theta) Vs InvMLam for cent=(%i), phi-Psi3_e/w=(%i)", iCent, iphi));
+      prCos_theta[iCent][iphi][3]->SetTitle(Form("Cos(theta) Vs InvMLam for cent=(%i), phi-Psi3_comb=(%i)", iCent, iphi));
       
-      prSin_theta[iCent][iphi][0]->SetTitle(Form("Sin(theta) Vs InvMLam for cent=(%i), phi-Psi2_e/w=(%i)", iCent));
-      prSin_theta[iCent][iphi][1]->SetTitle(Form("Sin(theta) Vs InvMLam for cent=(%i), phi-Psi2_comb=(%i)", iCent));
-      prSin_theta[iCent][iphi][2]->SetTitle(Form("Sin(theta) Vs InvMLam for cent=(%i), phi-Psi3_e/w=(%i)", iCent));
-      prSin_theta[iCent][iphi][3]->SetTitle(Form("Sin(theta) Vs InvMLam for cent=(%i), phi-Psi3_comb=(%i)", iCent));
+      prSin_theta[iCent][iphi][0]->SetTitle(Form("Sin(theta) Vs InvMLam for cent=(%i), phi-Psi2_e/w=(%i)", iCent, iphi));
+      prSin_theta[iCent][iphi][1]->SetTitle(Form("Sin(theta) Vs InvMLam for cent=(%i), phi-Psi2_comb=(%i)", iCent, iphi));
+      prSin_theta[iCent][iphi][2]->SetTitle(Form("Sin(theta) Vs InvMLam for cent=(%i), phi-Psi3_e/w=(%i)", iCent, iphi));
+      prSin_theta[iCent][iphi][3]->SetTitle(Form("Sin(theta) Vs InvMLam for cent=(%i), phi-Psi3_comb=(%i)", iCent, iphi));
       
-      prSin_diffPhiPsi1Sin_theta[iCent][iphi][0]->SetTitle(Form("Sin(Psi1-phi)Sin(Theta) Vs InvMLam for cent=(%i), phi-Psi2_e/w=(%i)", iCent));
-      prSin_diffPhiPsi1Sin_theta[iCent][iphi][1]->SetTitle(Form("Sin(Psi1-phi)Sin(Theta) Vs InvMLam for cent=(%i), phi-Psi2_comb=(%i)", iCent));
-      prSin_diffPhiPsi1Sin_theta[iCent][iphi][2]->SetTitle(Form("Sin(Psi1-phi)Sin(Theta) Vs InvMLam for cent=(%i), phi-Psi3_e/w=(%i)", iCent));
-      prSin_diffPhiPsi1Sin_theta[iCent][iphi][3]->SetTitle(Form("Sin(Psi1-phi)Sin(Theta) Vs InvMLam for cent=(%i), phi-Psi3_comb=(%i)", iCent));
+      prSin_diffPhiPsi1Sin_theta[iCent][iphi][0]->SetTitle(Form("Sin(Psi1-phi)Sin(Theta) Vs InvMLam for cent=(%i), phi-Psi2_e/w=(%i)", iCent, iphi));
+      prSin_diffPhiPsi1Sin_theta[iCent][iphi][1]->SetTitle(Form("Sin(Psi1-phi)Sin(Theta) Vs InvMLam for cent=(%i), phi-Psi2_comb=(%i)", iCent, iphi));
+      prSin_diffPhiPsi1Sin_theta[iCent][iphi][2]->SetTitle(Form("Sin(Psi1-phi)Sin(Theta) Vs InvMLam for cent=(%i), phi-Psi3_e/w=(%i)", iCent, iphi));
+      prSin_diffPhiPsi1Sin_theta[iCent][iphi][3]->SetTitle(Form("Sin(Psi1-phi)Sin(Theta) Vs InvMLam for cent=(%i), phi-Psi3_comb=(%i)", iCent, iphi));
       
-      prCos_diffPhiPsi1Sin_theta[iCent][iphi][0]->SetTitle(Form("Cos(Psi1-phi)Sin(Theta) Vs InvMLam for cent=(%i), phi-Psi2_e/w=(%i)", iCent));
-      prCos_diffPhiPsi1Sin_theta[iCent][iphi][1]->SetTitle(Form("Cos(Psi1-phi)Sin(Theta) Vs InvMLam for cent=(%i), phi-Psi2_comb=(%i)", iCent));
-      prCos_diffPhiPsi1Sin_theta[iCent][iphi][2]->SetTitle(Form("Cos(Psi1-phi)Sin(Theta) Vs InvMLam for cent=(%i), phi-Psi3_e/w=(%i)", iCent));
-      prCos_diffPhiPsi1Sin_theta[iCent][iphi][3]->SetTitle(Form("Cos(Psi1-phi)Sin(Theta) Vs InvMLam for cent=(%i), phi-Psi3_comb=(%i)", iCent));
+      prCos_diffPhiPsi1Sin_theta[iCent][iphi][0]->SetTitle(Form("Cos(Psi1-phi)Sin(Theta) Vs InvMLam for cent=(%i), phi-Psi2_e/w=(%i)", iCent, iphi));
+      prCos_diffPhiPsi1Sin_theta[iCent][iphi][1]->SetTitle(Form("Cos(Psi1-phi)Sin(Theta) Vs InvMLam for cent=(%i), phi-Psi2_comb=(%i)", iCent, iphi));
+      prCos_diffPhiPsi1Sin_theta[iCent][iphi][2]->SetTitle(Form("Cos(Psi1-phi)Sin(Theta) Vs InvMLam for cent=(%i), phi-Psi3_e/w=(%i)", iCent, iphi));
+      prCos_diffPhiPsi1Sin_theta[iCent][iphi][3]->SetTitle(Form("Cos(Psi1-phi)Sin(Theta) Vs InvMLam for cent=(%i), phi-Psi3_comb=(%i)", iCent, iphi));
 
       //LamBar
-      prSin_diffPhiPsi1_LamBar[iCent][iphi][0]->SetTitle(Form("Sin(Psi1-phi) Vs InvMLamBar for cent=(%i), phi-Psi2_e/w=(%i)", iCent));
-      prSin_diffPhiPsi1_LamBar[iCent][iphi][1]->SetTitle(Form("Sin(Psi1-phi) Vs InvMLamBar for cent=(%i), phi-Psi2_comb=(%i)", iCent));
-      prSin_diffPhiPsi1_LamBar[iCent][iphi][2]->SetTitle(Form("Sin(Psi1-phi) Vs InvMLamBar for cent=(%i), phi-Psi3_e/w=(%i)", iCent));
-      prSin_diffPhiPsi1_LamBar[iCent][iphi][3]->SetTitle(Form("Sin(Psi1-phi) Vs InvMLamBar for cent=(%i), phi-Psi3_comb=(%i)", iCent));
+      prSin_diffPhiPsi1_LamBar[iCent][iphi][0]->SetTitle(Form("Sin(Psi1-phi) Vs InvMLamBar for cent=(%i), phi-Psi2_e/w=(%i)", iCent, iphi));
+      prSin_diffPhiPsi1_LamBar[iCent][iphi][1]->SetTitle(Form("Sin(Psi1-phi) Vs InvMLamBar for cent=(%i), phi-Psi2_comb=(%i)", iCent, iphi));
+      prSin_diffPhiPsi1_LamBar[iCent][iphi][2]->SetTitle(Form("Sin(Psi1-phi) Vs InvMLamBar for cent=(%i), phi-Psi3_e/w=(%i)", iCent, iphi));
+      prSin_diffPhiPsi1_LamBar[iCent][iphi][3]->SetTitle(Form("Sin(Psi1-phi) Vs InvMLamBar for cent=(%i), phi-Psi3_comb=(%i)", iCent, iphi));
 
-      prCos_diffPhiPsi1_LamBar[iCent][iphi][0]->SetTitle(Form("Cos(Psi1-phi) Vs InvMLamBar for cent=(%i), phi-Psi2_e/w=(%i)", iCent));
-      prCos_diffPhiPsi1_LamBar[iCent][iphi][1]->SetTitle(Form("Cos(Psi1-phi) Vs InvMLamBar for cent=(%i), phi-Psi2_comb=(%i)", iCent));
-      prCos_diffPhiPsi1_LamBar[iCent][iphi][2]->SetTitle(Form("Cos(Psi1-phi) Vs InvMLamBar for cent=(%i), phi-Psi3_e/w=(%i)", iCent));
-      prCos_diffPhiPsi1_LamBar[iCent][iphi][3]->SetTitle(Form("Cos(Psi1-phi) Vs InvMLamBar for cent=(%i), phi-Psi3_comb=(%i)", iCent));
+      prCos_diffPhiPsi1_LamBar[iCent][iphi][0]->SetTitle(Form("Cos(Psi1-phi) Vs InvMLamBar for cent=(%i), phi-Psi2_e/w=(%i)", iCent, iphi));
+      prCos_diffPhiPsi1_LamBar[iCent][iphi][1]->SetTitle(Form("Cos(Psi1-phi) Vs InvMLamBar for cent=(%i), phi-Psi2_comb=(%i)", iCent, iphi));
+      prCos_diffPhiPsi1_LamBar[iCent][iphi][2]->SetTitle(Form("Cos(Psi1-phi) Vs InvMLamBar for cent=(%i), phi-Psi3_e/w=(%i)", iCent, iphi));
+      prCos_diffPhiPsi1_LamBar[iCent][iphi][3]->SetTitle(Form("Cos(Psi1-phi) Vs InvMLamBar for cent=(%i), phi-Psi3_comb=(%i)", iCent, iphi));
       
-      prCos_theta_LamBar[iCent][iphi][0]->SetTitle(Form("Cos(theta) Vs InvMLamBar for cent=(%i), phi-Psi2_e/w=(%i)", iCent));
-      prCos_theta_LamBar[iCent][iphi][1]->SetTitle(Form("Cos(theta) Vs InvMLamBar for cent=(%i), phi-Psi2_comb=(%i)", iCent));
-      prCos_theta_LamBar[iCent][iphi][2]->SetTitle(Form("Cos(theta) Vs InvMLamBar for cent=(%i), phi-Psi3_e/w=(%i)", iCent));
-      prCos_theta_LamBar[iCent][iphi][3]->SetTitle(Form("Cos(theta) Vs InvMLamBar for cent=(%i), phi-Psi3_comb=(%i)", iCent));
+      prCos_theta_LamBar[iCent][iphi][0]->SetTitle(Form("Cos(theta) Vs InvMLamBar for cent=(%i), phi-Psi2_e/w=(%i)", iCent, iphi));
+      prCos_theta_LamBar[iCent][iphi][1]->SetTitle(Form("Cos(theta) Vs InvMLamBar for cent=(%i), phi-Psi2_comb=(%i)", iCent, iphi));
+      prCos_theta_LamBar[iCent][iphi][2]->SetTitle(Form("Cos(theta) Vs InvMLamBar for cent=(%i), phi-Psi3_e/w=(%i)", iCent, iphi));
+      prCos_theta_LamBar[iCent][iphi][3]->SetTitle(Form("Cos(theta) Vs InvMLamBar for cent=(%i), phi-Psi3_comb=(%i)", iCent, iphi));
       
-      prSin_theta_LamBar[iCent][iphi][0]->SetTitle(Form("Sin(theta) Vs InvMLamBar for cent=(%i), phi-Psi2_e/w=(%i)", iCent));
-      prSin_theta_LamBar[iCent][iphi][1]->SetTitle(Form("Sin(theta) Vs InvMLamBar for cent=(%i), phi-Psi2_comb=(%i)", iCent));
-      prSin_theta_LamBar[iCent][iphi][2]->SetTitle(Form("Sin(theta) Vs InvMLamBar for cent=(%i), phi-Psi3_e/w=(%i)", iCent));
-      prSin_theta_LamBar[iCent][iphi][3]->SetTitle(Form("Sin(theta) Vs InvMLamBar for cent=(%i), phi-Psi3_comb=(%i)", iCent));
+      prSin_theta_LamBar[iCent][iphi][0]->SetTitle(Form("Sin(theta) Vs InvMLamBar for cent=(%i), phi-Psi2_e/w=(%i)", iCent, iphi));
+      prSin_theta_LamBar[iCent][iphi][1]->SetTitle(Form("Sin(theta) Vs InvMLamBar for cent=(%i), phi-Psi2_comb=(%i)", iCent, iphi));
+      prSin_theta_LamBar[iCent][iphi][2]->SetTitle(Form("Sin(theta) Vs InvMLamBar for cent=(%i), phi-Psi3_e/w=(%i)", iCent, iphi));
+      prSin_theta_LamBar[iCent][iphi][3]->SetTitle(Form("Sin(theta) Vs InvMLamBar for cent=(%i), phi-Psi3_comb=(%i)", iCent, iphi));
       
-      prSin_diffPhiPsi1Sin_theta_LamBar[iCent][iphi][0]->SetTitle(Form("Sin(Psi1-phi)Sin(Theta) Vs InvMLamBar for cent=(%i), phi-Psi2_e/w=(%i)", iCent));
-      prSin_diffPhiPsi1Sin_theta_LamBar[iCent][iphi][1]->SetTitle(Form("Sin(Psi1-phi)Sin(Theta) Vs InvMLamBar for cent=(%i), phi-Psi2_comb=(%i)", iCent));
-      prSin_diffPhiPsi1Sin_theta_LamBar[iCent][iphi][2]->SetTitle(Form("Sin(Psi1-phi)Sin(Theta) Vs InvMLamBar for cent=(%i), phi-Psi3_e/w=(%i)", iCent));
-      prSin_diffPhiPsi1Sin_theta_LamBar[iCent][iphi][3]->SetTitle(Form("Sin(Psi1-phi)Sin(Theta) Vs InvMLamBar for cent=(%i), phi-Psi3_comb=(%i)", iCent));
+      prSin_diffPhiPsi1Sin_theta_LamBar[iCent][iphi][0]->SetTitle(Form("Sin(Psi1-phi)Sin(Theta) Vs InvMLamBar for cent=(%i), phi-Psi2_e/w=(%i)", iCent, iphi));
+      prSin_diffPhiPsi1Sin_theta_LamBar[iCent][iphi][1]->SetTitle(Form("Sin(Psi1-phi)Sin(Theta) Vs InvMLamBar for cent=(%i), phi-Psi2_comb=(%i)", iCent, iphi));
+      prSin_diffPhiPsi1Sin_theta_LamBar[iCent][iphi][2]->SetTitle(Form("Sin(Psi1-phi)Sin(Theta) Vs InvMLamBar for cent=(%i), phi-Psi3_e/w=(%i)", iCent, iphi));
+      prSin_diffPhiPsi1Sin_theta_LamBar[iCent][iphi][3]->SetTitle(Form("Sin(Psi1-phi)Sin(Theta) Vs InvMLamBar for cent=(%i), phi-Psi3_comb=(%i)", iCent, iphi));
       
-      prCos_diffPhiPsi1Sin_theta_LamBar[iCent][iphi][0]->SetTitle(Form("Cos(Psi1-phi)Sin(Theta) Vs InvMLamBar for cent=(%i), phi-Psi2_e/w=(%i)", iCent));
-      prCos_diffPhiPsi1Sin_theta_LamBar[iCent][iphi][1]->SetTitle(Form("Cos(Psi1-phi)Sin(Theta) Vs InvMLamBar for cent=(%i), phi-Psi2_comb=(%i)", iCent));
-      prCos_diffPhiPsi1Sin_theta_LamBar[iCent][iphi][2]->SetTitle(Form("Cos(Psi1-phi)Sin(Theta) Vs InvMLamBar for cent=(%i), phi-Psi3_e/w=(%i)", iCent));
-      prCos_diffPhiPsi1Sin_theta_LamBar[iCent][iphi][3]->SetTitle(Form("Cos(Psi1-phi)Sin(Theta) Vs InvMLamBar for cent=(%i), phi-Psi3_comb=(%i)", iCent));
+      prCos_diffPhiPsi1Sin_theta_LamBar[iCent][iphi][0]->SetTitle(Form("Cos(Psi1-phi)Sin(Theta) Vs InvMLamBar for cent=(%i), phi-Psi2_e/w=(%i)", iCent, iphi));
+      prCos_diffPhiPsi1Sin_theta_LamBar[iCent][iphi][1]->SetTitle(Form("Cos(Psi1-phi)Sin(Theta) Vs InvMLamBar for cent=(%i), phi-Psi2_comb=(%i)", iCent, iphi));
+      prCos_diffPhiPsi1Sin_theta_LamBar[iCent][iphi][2]->SetTitle(Form("Cos(Psi1-phi)Sin(Theta) Vs InvMLamBar for cent=(%i), phi-Psi3_e/w=(%i)", iCent, iphi));
+      prCos_diffPhiPsi1Sin_theta_LamBar[iCent][iphi][3]->SetTitle(Form("Cos(Psi1-phi)Sin(Theta) Vs InvMLamBar for cent=(%i), phi-Psi3_comb=(%i)", iCent, iphi));
     }
     
   }

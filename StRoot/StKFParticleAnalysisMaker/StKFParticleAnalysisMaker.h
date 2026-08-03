@@ -153,6 +153,9 @@ class StKFParticleAnalysisMaker : public StMaker {
   TProfile *prSin_diffPhiPsi1Sin_theta_LamBar[9][6][4];
   TProfile *prCos_diffPhiPsi1Sin_theta_LamBar[9][6][4];
 
+  TH1F *InvMLamDist[9][6][4];
+  TH1F *InvMLamBarDist[9][6][4];
+
   StEpdEpFinder *etaFinder;
   StEpdEpFinder *etaVzFinder[14];
   StEpdGeom *mEpdGeom;
