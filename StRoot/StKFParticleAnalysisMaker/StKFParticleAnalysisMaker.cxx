@@ -703,7 +703,7 @@ Int_t StKFParticleAnalysisMaker::Make()
   }
 
     
-
+cout<<"0000"<<endl;
   //.........................................start of RP calculation.....................................
   bool check = true;
   for(int iSub=0; iSub!=nSub-1; iSub++){
@@ -811,7 +811,7 @@ Int_t StKFParticleAnalysisMaker::Make()
 
   //.........................................end of RP calculation.....................................
   
-
+cout<<"1111"<<endl;
   //.........................................Pz calculating............................................
   for (int iParticle=0; iParticle<fStKFParticlePerformanceInterface->GetNReconstructedParticles(); iParticle++){
     KFParticle particle = fStKFParticleInterface->GetParticles()[iParticle];
@@ -912,7 +912,7 @@ Int_t StKFParticleAnalysisMaker::Make()
 
       }//for (const auto& elem : particle.DaughterIds())
     }//if(particle.GetPDG() == 3122)
-
+cout<<"2222"<<endl;
     //AntiLambda research
     if(particle.GetPDG() == -3122){
 
@@ -1007,9 +1007,9 @@ Int_t StKFParticleAnalysisMaker::Make()
 
       }//for (const auto& elem : particle.DaughterIds())
     }//end of AntiLambda research
-
+cout<<"3333"<<endl;
   }//for (int iParticle=0; iParticle<fStKFParticlePerformanceInterface->GetNReconstructedParticles(); iParticle++)
-  
+ cout<<"4444"<<endl; 
  
   return kStOk; 
  
@@ -1467,7 +1467,7 @@ double StKFParticleAnalysisMaker::GetPsi(int iOrd, double Qx, double Qy){
 
 
 void StKFParticleAnalysisMaker::GetCentring() {
-  TFile *file = new TFile("/star/u/mmorozov/14p5MakeCorrections/correctionsEP_output/output6sem_FirstSecondRPCorr_14p5.root", "read");	
+  TFile *file = new TFile("/star/u/mmorozov/14p5MakeCorrections/correctionsEP_output/output6sem_Psi1_2_3Corr.root", "read");	
   
   for(int iSub=0; iSub!=2*nSub; iSub++){
     Qvec1Prof_TH[iSub] = (TH1F*)file->Get(Form("Qvec1Prof_%i", iSub));
@@ -1478,7 +1478,7 @@ void StKFParticleAnalysisMaker::GetCentring() {
 
 
 void StKFParticleAnalysisMaker::GetFlattening() {
-  TFile *file = new TFile("/star/u/mmorozov/14p5MakeCorrections/correctionsEP_output/outputCentred_FirstSecondRPCorr_14p5.root", "read");
+  TFile *file = new TFile("/star/u/mmorozov/14p5MakeCorrections/correctionsEP_output/outputCentred_Psi1_2_3Corr.root", "read");
 
   for(int iProf=0; iProf!=10; iProf++){
     for(int iSub=0; iSub!=nSub; iSub++){
