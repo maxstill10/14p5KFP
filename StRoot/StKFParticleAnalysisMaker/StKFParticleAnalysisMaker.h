@@ -107,11 +107,11 @@ class StKFParticleAnalysisMaker : public StMaker {
   //My variables
   const Char_t *runnumber;
   double QWeight_1[nSub], QWeight_2[nSub];
-  double Qvec_1[2*nSub], Qvec_2[2*nSub];
-  double Psi1[nSub], Psi2[nSub];
-  double deltaPsi1[nSub], deltaPsi2[nSub];
-  int PP, TT, EW, iPsi, iSide, row;
-  double sin_diffPsi1Phi, cos_diffPsi1Phi;
+  double Qvec_1[2*nSub], Qvec_2[2*nSub], Qvec_3[2*nSub];
+  double Psi1[nSub], Psi2[nSub], Psi3[nSub];
+  double deltaPsi1[nSub], deltaPsi2[nSub], deltaPsi3[nSub];
+  int PP, TT, EW, iPsi, iSide, row, phi_bin;
+  double sin_diffPsi1Phi, cos_diffPsi1Phi, delta_phi;
   
   //My hist
   TProfile *v1_average[9][2];
@@ -120,32 +120,38 @@ class StKFParticleAnalysisMaker : public StMaker {
   TH1F *Coef_B_n_TH_Psi1[10][nSub];
   TH1F *Coef_A_n_TH_Psi2[10][nSub];
   TH1F *Coef_B_n_TH_Psi2[10][nSub];
+  TH1F *Coef_A_n_TH_Psi3[10][nSub];
+  TH1F *Coef_B_n_TH_Psi3[10][nSub];
   
   TH1F *Qvec1Prof_TH[nSub*2];
-  TH1F *Qvec2Prof_TH[nSub*2]; 
+  TH1F *Qvec2Prof_TH[nSub*2];
+  TH1F *Qvec3Prof_TH[nSub*2]; 
 
   TH1F *Qvec1Hist[9][2*nSub];
   TH1F *Qvec2Hist[9][2*nSub];
+  TH1F *Qvec3Hist[9][2*nSub];
   TH1F *Psi1Hist[9][nSub];
   TH1F *Psi2Hist[9][nSub];
+  TH1F *Psi3Hist[9][nSub];
 
   TProfile *CosOfDiff_1;
   TProfile *CosOfDiff_2;
+  TProfile *CosOfDiff_3;
 
   //For Pz
-  TProfile *prSin_diffPhiPsi1[9][2];
-  TProfile *prCos_diffPhiPsi1[9][2];
-  TProfile *prCos_theta[9][2];
-  TProfile *prSin_theta[9][2];
-  TProfile *prSin_diffPhiPsi1Sin_theta[9][2];
-  TProfile *prCos_diffPhiPsi1Sin_theta[9][2];
+  TProfile *prSin_diffPhiPsi1[9][6][4];
+  TProfile *prCos_diffPhiPsi1[9][6][4];
+  TProfile *prCos_theta[9][6][4];
+  TProfile *prSin_theta[9][6][4];
+  TProfile *prSin_diffPhiPsi1Sin_theta[9][6][4];
+  TProfile *prCos_diffPhiPsi1Sin_theta[9][6][4];
 
-  TProfile *prSin_diffPhiPsi1_LamBar[9][2];
-  TProfile *prCos_diffPhiPsi1_LamBar[9][2];
-  TProfile *prCos_theta_LamBar[9][2];
-  TProfile *prSin_theta_LamBar[9][2];
-  TProfile *prSin_diffPhiPsi1Sin_theta_LamBar[9][2];
-  TProfile *prCos_diffPhiPsi1Sin_theta_LamBar[9][2];
+  TProfile *prSin_diffPhiPsi1_LamBar[9][6][4];
+  TProfile *prCos_diffPhiPsi1_LamBar[9][6][4];
+  TProfile *prCos_theta_LamBar[9][6][4];
+  TProfile *prSin_theta_LamBar[9][6][4];
+  TProfile *prSin_diffPhiPsi1Sin_theta_LamBar[9][6][4];
+  TProfile *prCos_diffPhiPsi1Sin_theta_LamBar[9][6][4];
 
   StEpdEpFinder *etaFinder;
   StEpdEpFinder *etaVzFinder[14];
