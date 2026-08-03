@@ -861,6 +861,8 @@ Int_t StKFParticleAnalysisMaker::Make()
         prSin_diffPhiPsi1Sin_theta[cent][phi_bin][1]->Fill(inv_m, sin_diffPsi1Phi*TMath::Sin(proton_mom.Theta()));
         prCos_diffPhiPsi1Sin_theta[cent][phi_bin][1]->Fill(inv_m, cos_diffPsi1Phi*TMath::Sin(proton_mom.Theta()));
 
+        InvMLamDist[cent][phi_bin][1]->Fill(inv_m);
+
         //research related Psi_e/w
         dphi = phi_Lam-Psi2[iPsi];
         while((dphi) < 0.) dphi+=TMath::Pi();
@@ -872,6 +874,8 @@ Int_t StKFParticleAnalysisMaker::Make()
         prSin_theta[cent][phi_bin][0]->Fill(inv_m, TMath::Sin(proton_mom.Theta()));
         prSin_diffPhiPsi1Sin_theta[cent][phi_bin][0]->Fill(inv_m, sin_diffPsi1Phi*TMath::Sin(proton_mom.Theta()));
         prCos_diffPhiPsi1Sin_theta[cent][phi_bin][0]->Fill(inv_m, cos_diffPsi1Phi*TMath::Sin(proton_mom.Theta()));
+
+        InvMLamDist[cent][phi_bin][0]->Fill(inv_m);
 
         //Psi3 dependences research
         delta_phi = TMath::Pi()/9;
@@ -888,6 +892,8 @@ Int_t StKFParticleAnalysisMaker::Make()
         prSin_diffPhiPsi1Sin_theta[cent][phi_bin][3]->Fill(inv_m, sin_diffPsi1Phi*TMath::Sin(proton_mom.Theta()));
         prCos_diffPhiPsi1Sin_theta[cent][phi_bin][3]->Fill(inv_m, cos_diffPsi1Phi*TMath::Sin(proton_mom.Theta()));
 
+        InvMLamDist[cent][phi_bin][3]->Fill(inv_m);
+
         //research related Psi_e/w
         dphi = phi_Lam-Psi3[iPsi];
         while((dphi) < 0.) dphi+=2*TMath::Pi()/3;//caus of dphi = (-5pi/3;pi)
@@ -900,6 +906,8 @@ Int_t StKFParticleAnalysisMaker::Make()
         prSin_theta[cent][phi_bin][2]->Fill(inv_m, TMath::Sin(proton_mom.Theta()));
         prSin_diffPhiPsi1Sin_theta[cent][phi_bin][2]->Fill(inv_m, sin_diffPsi1Phi*TMath::Sin(proton_mom.Theta()));
         prCos_diffPhiPsi1Sin_theta[cent][phi_bin][2]->Fill(inv_m, cos_diffPsi1Phi*TMath::Sin(proton_mom.Theta()));
+
+        InvMLamDist[cent][phi_bin][2]->Fill(inv_m);
         
 
       }//for (const auto& elem : particle.DaughterIds())
@@ -947,6 +955,8 @@ Int_t StKFParticleAnalysisMaker::Make()
         prSin_theta_LamBar[cent][phi_bin][1]->Fill(inv_m, TMath::Sin(proton_mom.Theta()));
         prSin_diffPhiPsi1Sin_theta_LamBar[cent][phi_bin][1]->Fill(inv_m, sin_diffPsi1Phi*TMath::Sin(proton_mom.Theta()));
         prCos_diffPhiPsi1Sin_theta_LamBar[cent][phi_bin][1]->Fill(inv_m, cos_diffPsi1Phi*TMath::Sin(proton_mom.Theta()));
+
+        InvMLamBarDist[cent][phi_bin][1]->Fill(inv_m);
         
 
         dphi = phi_Lam-Psi2[iPsi];
@@ -959,6 +969,8 @@ Int_t StKFParticleAnalysisMaker::Make()
         prSin_theta_LamBar[cent][phi_bin][0]->Fill(inv_m, TMath::Sin(proton_mom.Theta()));
         prSin_diffPhiPsi1Sin_theta_LamBar[cent][phi_bin][0]->Fill(inv_m, sin_diffPsi1Phi*TMath::Sin(proton_mom.Theta()));
         prCos_diffPhiPsi1Sin_theta_LamBar[cent][phi_bin][0]->Fill(inv_m, cos_diffPsi1Phi*TMath::Sin(proton_mom.Theta()));
+
+        InvMLamBarDist[cent][phi_bin][0]->Fill(inv_m);
 
         //Psi3 dependences research
         delta_phi = TMath::Pi()/9;
@@ -975,6 +987,8 @@ Int_t StKFParticleAnalysisMaker::Make()
         prSin_diffPhiPsi1Sin_theta_LamBar[cent][phi_bin][3]->Fill(inv_m, sin_diffPsi1Phi*TMath::Sin(proton_mom.Theta()));
         prCos_diffPhiPsi1Sin_theta_LamBar[cent][phi_bin][3]->Fill(inv_m, cos_diffPsi1Phi*TMath::Sin(proton_mom.Theta()));
 
+        InvMLamBarDist[cent][phi_bin][3]->Fill(inv_m);
+
         //research related Psi_e/w
         dphi = phi_Lam-Psi3[iPsi];
         while((dphi) < 0.) dphi+=2*TMath::Pi()/3;//caus of dphi = (-5pi/3;pi)
@@ -987,6 +1001,8 @@ Int_t StKFParticleAnalysisMaker::Make()
         prSin_theta_LamBar[cent][phi_bin][2]->Fill(inv_m, TMath::Sin(proton_mom.Theta()));
         prSin_diffPhiPsi1Sin_theta_LamBar[cent][phi_bin][2]->Fill(inv_m, sin_diffPsi1Phi*TMath::Sin(proton_mom.Theta()));
         prCos_diffPhiPsi1Sin_theta_LamBar[cent][phi_bin][2]->Fill(inv_m, cos_diffPsi1Phi*TMath::Sin(proton_mom.Theta()));
+
+        InvMLamBarDist[cent][phi_bin][2]->Fill(inv_m);
 
 
       }//for (const auto& elem : particle.DaughterIds())
