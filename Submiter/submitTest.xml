@@ -1,5 +1,5 @@
 <!-- Task description -->
-<job maxFilesPerProcess="20" filesPerHour="8" fileListSyntax="xrootd">
+<job maxFilesPerProcess="5" filesPerHour="8" fileListSyntax="xrootd">
 <!-- Decription of the task -->
 <shell>singularity exec -e -B /direct -B /star -B /afs -B /gpfs -B /sdcc/lustre02 /cvmfs/star.sdcc.bnl.gov/containers/rhic_sl7.sif</shell>
 <command>

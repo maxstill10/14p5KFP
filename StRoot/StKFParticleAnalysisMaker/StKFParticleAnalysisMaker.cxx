@@ -843,7 +843,7 @@ Int_t StKFParticleAnalysisMaker::Make()
         double inv_m = particle.GetMass();
         phi_Lam = ParentVec.Phi();
 
-        sin_diffPsi1Phi = TMath::Sin(proton_mom.Phi() - Psi1[2]);
+        sin_diffPsi1Phi = TMath::Sin(Psi1[2] - proton_mom.Phi());
         cos_diffPsi1Phi = TMath::Cos(proton_mom.Phi() - Psi1[2]);
         
         //Psi2 dependences research
